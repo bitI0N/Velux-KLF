@@ -1,0 +1,12 @@
+{
+    "translations": {
+        "de": {
+            "Active": "Aktiv",
+            "Password": "Passwort",
+            "Connected": "Verbunden",
+            "Interface closed": "Verbindung geschlossen",
+            "Connection lost": "Verbindung verloren",
+            "Handshake error": "Fehler im Handshake"
+        }
+    }
+}

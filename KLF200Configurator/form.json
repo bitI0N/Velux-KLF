@@ -1,0 +1,33 @@
+{
+    "actions": [
+        {
+            "type": "Configurator",
+            "name": "Config",
+            "caption": "",
+            "add": false,
+            "delete": true,
+            "rowCount": 8,
+            "columns": [{
+                    "caption": "Node ID",
+                    "name": "nodeid",
+                    "width": "80px"
+                }, 
+                {
+                    "caption": "Type",
+                    "name": "type",
+                    "width": "160px"
+                },
+                {
+                    "caption": "Name",
+                    "name": "name",
+                    "width": "300px"
+                }, {
+                    "caption": "Location",
+                    "name": "location",
+                    "width": "auto"
+                }
+            ],
+            "values": []
+        }
+    ]
+}
