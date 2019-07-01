@@ -120,6 +120,40 @@ class ErrorNTF
 
 }
 
+class State
+{
+    const NON_EXECUTING = 0;
+    const ERROR_WHILE_EXECUTION = 1;
+    const NOT_USED = 2;
+    const WAITING_FOR_POWER = 3;
+    const EXECUTING = 4;
+    const DONE = 5;
+    const UNKNOW = 255;
+
+    public static function ToString(int $State)
+    {
+        switch ($State) {
+            case self::NON_EXECUTING:
+                return 'Parameter is unable to execute';
+            case self::ERROR_WHILE_EXECUTION:
+                return 'Execution has failed.';
+            case self::NOT_USED:
+                return 'not used';
+            case self::WAITING_FOR_POWER:
+                return 'waiting for power';
+            case self::EXECUTING:
+                return 'Executing';
+            case self::DONE:
+                return 'done';
+            case self::UNKNOW:
+                return 'unknow';
+            default:
+                return 'unknow state value: 0x' . sprintf('%02X', $State);
+        }
+    }
+
+}
+
 class RunStatus
 {
     const EXECUTION_COMPLETED = 0;

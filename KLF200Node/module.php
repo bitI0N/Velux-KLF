@@ -7,11 +7,12 @@ eval('declare(strict_types=1);namespace KLF200Node {?>' . file_get_contents(__DI
 eval('declare(strict_types=1);namespace KLF200Node {?>' . file_get_contents(__DIR__ . '/../libs/helper/DebugHelper.php') . '}');
 eval('declare(strict_types=1);namespace KLF200Node {?>' . file_get_contents(__DIR__ . '/../libs/helper/VariableHelper.php') . '}');
 eval('declare(strict_types=1);namespace KLF200Node {?>' . file_get_contents(__DIR__ . '/../libs/helper/VariableProfileHelper.php') . '}');
-eval('declare(strict_types=1);namespace KLF200Node {?>' . file_get_contents(__DIR__ . '/../libs/helper/AttributeArrayHelper.php') . '}');
+/* eval('declare(strict_types=1);namespace KLF200Node {?>' . file_get_contents(__DIR__ . '/../libs/helper/AttributeArrayHelper.php') . '}'); */
 
 /**
  * @property char $NodeId
  * @property int $SessionId
+ * @property int $NodeSubType
  */
 class KLF200Node extends IPSModule
 {
@@ -20,7 +21,7 @@ class KLF200Node extends IPSModule
         \KLF200Node\BufferHelper,
         \KLF200Node\VariableHelper,
         \KLF200Node\VariableProfileHelper,
-        \KLF200Node\AttributeArrayHelper,
+    //\KLF200Node\AttributeArrayHelper,
         \KLF200Node\DebugHelper {
         \KLF200Node\DebugHelper::SendDebug as SendDebug2;
     }
@@ -32,7 +33,9 @@ class KLF200Node extends IPSModule
         parent::Create();
         $this->ConnectParent('{725D4DF6-C8FC-463C-823A-D3481A3D7003}');
         $this->RegisterPropertyInteger('NodeId', -1);
+        $this->RegisterAttributeInteger('NodeSubType', -1);
         $this->SessionId = 1;
+        $this->NodeSubType = -1;
     }
 
     /**
@@ -69,9 +72,224 @@ class KLF200Node extends IPSModule
         }
         $this->SetReceiveDataFilter('(' . $Line . ')');
         $this->SendDebug('FILTER', $Line, 0);
+        $this->NodeSubType = $this->ReadAttributeInteger('NodeSubType');
+
+        $this->RegisterProfileInteger('KLF200.Intensity.51200', '', '', ' %', 0, 0xC800, 1);
+        $this->RegisterProfileInteger('KLF200.RollerShutter', 'Jalousie', '', ' %', 0, 0xC800, 1);
+        $this->RegisterProfileInteger('KLF200.Slats', 'Speedo', '', ' %', 0, 0xC800, 1);
+        $this->RegisterProfileInteger('KLF200.Blind', 'Raffstore', '', ' %', 0, 0xC800, 1);
+        $this->RegisterProfileInteger('KLF200.Window', 'Window', '', ' %', 0, 0xC800, 1);
+        $this->RegisterProfileInteger('KLF200.Heating.Reversed', 'Temperature', '', ' %', 0, 0xC800, 1);
+        $this->RegisterProfileInteger('KLF200.Garage', 'Garage', '', ' %', 0, 0xC800, 1);
+        $this->RegisterProfileInteger('KLF200.Light.51200.Reversed', 'Light', '', ' %', 0, 0xC800, 1);
+        $this->RegisterProfileBoolean('KLF200.Light.Reversed', 'Light', '', '');
+        $this->RegisterProfileBoolean('KLF200.Lock', 'Lock', '', '');
         if (IPS_GetKernelRunlevel() == KR_READY) {
             $this->RequestNodeInformation();
         }
+    }
+
+    private function RegisterNodeVariables(int $NodeTypeSubType)
+    {
+        //$OldNodeTypeSubType = $this->NodeSubType;
+        $this->NodeSubType = $NodeTypeSubType;
+        switch ($NodeTypeSubType) {
+            case 0x0040: //Interior Venetian Blind
+                $this->RegisterVariableInteger('MAIN', $this->Translate('Position'), 'KLF200.Blind', 0);
+                $this->RegisterVariableInteger('FP1', $this->Translate('Orientation'), 'KLF200.Slats', 0);
+                $this->UnregisterVariable('FP2');
+                $this->UnregisterVariable('FP3');
+                break;
+            case 0x0080: //Roller Shutter
+            case 0x0082: //Roller Shutter With projection
+                $this->RegisterVariableInteger('MAIN', $this->Translate('Position'), 'KLF200.RollerShutter', 0);
+                $this->UnregisterVariable('FP1');
+                $this->UnregisterVariable('FP2');
+                $this->UnregisterVariable('FP3');
+                break;
+            case 0x0081: //Adjustable slats rolling shutter
+                $this->RegisterVariableInteger('MAIN', $this->Translate('Position'), 'KLF200.RollerShutter', 0);
+                $this->UnregisterVariable('FP1');
+                $this->UnregisterVariable('FP2');
+                $this->RegisterVariableInteger('FP3', $this->Translate('Orientation'), 'KLF200.Slats', 0);
+                break;
+            case 0x00C0: //Vertical Exterior Awning
+                $this->RegisterVariableInteger('MAIN', $this->Translate('Position'), 'KLF200.RollerShutter', 0);
+                $this->UnregisterVariable('FP1');
+                $this->UnregisterVariable('FP2');
+                $this->UnregisterVariable('FP3');
+                break;
+            case 0x0100: //Window opener
+            case 0x0101: //Window opener with integrated rain sensor
+                $this->RegisterVariableInteger('MAIN', $this->Translate('Position'), 'KLF200.Window', 0);
+                $this->UnregisterVariable('FP1');
+                $this->UnregisterVariable('FP2');
+                $this->UnregisterVariable('FP3');
+                break;
+            case 0x0140: //Garage door opener
+            case 0x017A: //Garage door opener
+            case 0x0200: //Rolling Door Opener
+                $this->RegisterVariableInteger('MAIN', $this->Translate('Position'), 'KLF200.Garage', 0);
+                $this->UnregisterVariable('FP1');
+                $this->UnregisterVariable('FP2');
+                $this->UnregisterVariable('FP3');
+                break;
+            case 0x0180: //Light
+                $this->RegisterVariableInteger('MAIN', $this->Translate('Intensity'), 'KLF200.Light.51200.Reversed', 0);
+                $this->UnregisterVariable('FP1');
+                $this->UnregisterVariable('FP2');
+                $this->UnregisterVariable('FP3');
+                break;
+            case 0x01BA: //Light only supporting on/off
+                $this->RegisterVariableBoolean('MAIN', $this->Translate('State'), 'KLF200.Light.Reversed', 0);
+                $this->UnregisterVariable('FP1');
+                $this->UnregisterVariable('FP2');
+                $this->UnregisterVariable('FP3');
+                break;
+            case 0x01C0: //Gate opener 
+            case 0x01FA: //Gate opener
+                $this->RegisterVariableInteger('MAIN', $this->Translate('Position'), 'KLF200.Intensity.51200', 0);
+                $this->UnregisterVariable('FP1');
+                $this->UnregisterVariable('FP2');
+                $this->UnregisterVariable('FP3');
+                break;
+            case 0x0240: //Door lock
+            case 0x0241: //Window lock
+                $this->RegisterVariableBoolean('MAIN', $this->Translate('Lock'), 'KLF200.Lock', 0);
+                $this->UnregisterVariable('FP1');
+                $this->UnregisterVariable('FP2');
+                $this->UnregisterVariable('FP3');
+                break;
+            case 0x0280: //Vertical Interior Blinds
+                $this->RegisterVariableInteger('MAIN', $this->Translate('Position'), 'KLF200.Blind', 0);
+                $this->UnregisterVariable('FP1');
+                $this->UnregisterVariable('FP2');
+                $this->UnregisterVariable('FP3');
+                break;
+            case 0x0340: //Dual Roller Shutter
+                $this->RegisterVariableInteger('MAIN', $this->Translate('Dual Roller Shutter'), 'KLF200.RollerShutter', 0);
+                $this->RegisterVariableInteger('FP1', $this->Translate('Upper position'), 'KLF200.RollerShutter', 0);
+                $this->RegisterVariableInteger('FP2', $this->Translate('Lower position'), 'KLF200.RollerShutter', 0);
+                $this->UnregisterVariable('FP3');
+                break;
+            case 0x03C0: //On/Off switch
+                $this->RegisterVariableBoolean('MAIN', $this->Translate('Switch'), '~Switch', 0);
+                $this->UnregisterVariable('FP1');
+                $this->UnregisterVariable('FP2');
+                $this->UnregisterVariable('FP3');
+                break;
+            case 0x0400: //Horizontal awning
+            case 0x04C0: //Curtain track
+            case 0x0600: //Swinging Shutters
+            case 0x0601: //Swinging Shutter with independent handling of the leaves
+                $this->RegisterVariableInteger('MAIN', $this->Translate('Position'), 'KLF200.Intensity.51200', 0);
+                $this->UnregisterVariable('FP1');
+                $this->UnregisterVariable('FP2');
+                $this->UnregisterVariable('FP3');
+                break;
+            case 0x0440: //Exterior Venetian blind
+                $this->RegisterVariableInteger('MAIN', $this->Translate('Position'), 'KLF200.Blind', 0);
+                $this->UnregisterVariable('FP1');
+                $this->UnregisterVariable('FP2');
+                $this->RegisterVariableInteger('FP3', $this->Translate('Orientation'), 'KLF200.Slats', 0);
+                break;
+            case 0x0480: //Louver blind
+                $this->RegisterVariableInteger('MAIN', $this->Translate('Position'), 'KLF200.Intensity.51200', 0);
+                $this->UnregisterVariable('FP1');
+                $this->UnregisterVariable('FP2');
+                $this->RegisterVariableInteger('FP3', $this->Translate('Orientation'), 'KLF200.Slats', 0);
+                break;
+            case 0x0500: //Ventilation point
+            case 0x0501: //Air inlet
+            case 0x0502: //Air transfer
+            case 0x0503: //Air outlet
+                $this->RegisterVariableInteger('MAIN', $this->Translate('Closed'), 'KLF200.Intensity.51200', 0);
+                $this->UnregisterVariable('FP1');
+                $this->UnregisterVariable('FP2');
+                $this->UnregisterVariable('FP3');
+                break;
+            case 0x0540: //Exterior heating
+            case 0x057A: //Exterior heating
+                $this->RegisterVariableInteger('MAIN', $this->Translate('Closed'), 'KLF200.Intensity.51200', 0);
+                $this->UnregisterVariable('FP1');
+                $this->UnregisterVariable('FP2');
+                $this->UnregisterVariable('FP3');
+                break;
+            case 0x0300: //Beacon
+            case 0x0380: //Heating Temperature Interface
+            case 0x0580: //Heat pump
+            case 0x05C0: //Intrusion alarm
+            default:
+                $this->UnregisterVariable('MAIN');
+                $this->UnregisterVariable('FP1');
+                $this->UnregisterVariable('FP2');
+                $this->UnregisterVariable('FP3');
+                break;
+        }
+        if (@$this->GetIDForIdent('MAIN') > 0) {
+            $this->EnableAction('MAIN');
+        }
+        if (@$this->GetIDForIdent('FP1') > 0) {
+            $this->EnableAction('FP1');
+        }
+        if (@$this->GetIDForIdent('FP2') > 0) {
+            $this->EnableAction('FP2');
+        }
+        if (@$this->GetIDForIdent('FP3') > 0) {
+            $this->EnableAction('FP3');
+        }
+    }
+
+    private function SetValues(int $CurrentPosition, int $FP1CurrentPosition, int $FP2CurrentPosition, int $FP3CurrentPosition)
+    {
+        // nur absolute Werte in Variablen schreiben
+        $Main = @$this->GetIDForIdent('MAIN');
+        if (($Main > 0) and ( $CurrentPosition <= 0xC800)) {
+            if (IPS_GetVariable($Main)['VariableType'] == VARIABLETYPE_BOOLEAN) {
+                $CurrentPosition = ($CurrentPosition == 0xC800);
+            }
+            $this->SetValue('MAIN', $CurrentPosition);
+        }
+        $FP1 = @$this->GetIDForIdent('FP1');
+        if (($FP1 > 0) and ( $FP1CurrentPosition <= 0xC800)) {
+            if (IPS_GetVariable($FP1)['VariableType'] == VARIABLETYPE_BOOLEAN) {
+                $FP1CurrentPosition = ($FP1CurrentPosition == 0xC800);
+            }
+            $this->SetValue('FP1', $FP1CurrentPosition);
+        }
+        $FP2 = @$this->GetIDForIdent('FP2');
+        if (($FP2 > 0) and ( $FP2CurrentPosition <= 0xC800)) {
+            if (IPS_GetVariable($FP2)['VariableType'] == VARIABLETYPE_BOOLEAN) {
+                $FP2CurrentPosition = ($FP2CurrentPosition == 0xC800);
+            }
+            $this->SetValue('FP2', $FP2CurrentPosition);
+        }
+        $FP3 = @$this->GetIDForIdent('FP3');
+        if (($FP3 > 0) and ( $FP3CurrentPosition <= 0xC800)) {
+            if (IPS_GetVariable($FP3)['VariableType'] == VARIABLETYPE_BOOLEAN) {
+                $FP3CurrentPosition = ($FP3CurrentPosition == 0xC800);
+            }
+            $this->SetValue('FP3', $FP3CurrentPosition);
+        }
+    }
+
+    public function RequestAction($Ident, $Value)
+    {
+        if (IPS_GetVariable($this->GetIDForIdent($Ident))['VariableType'] == VARIABLETYPE_BOOLEAN) {
+            $Value = $Value ? 0xc800 : 0x0000;
+        }
+        switch ($Ident) {
+            case 'MAIN':
+                return $this->SetMainParameter($Value);
+            case 'FP1':
+                return $this->SetFunctionParameter1($Value);
+            case 'FP2':
+                return $this->SetFunctionParameter2($Value);
+            case 'FP3':
+                return $this->SetFunctionParameter3($Value);
+        }
+        echo $this->Translate('Invalid Ident');
+        return;
     }
 
     private function ReceiveEvent(\KLF200\APIData $APIData)
@@ -94,32 +312,43 @@ class KLF200Node extends IPSModule
                 $this->SendDebug('NodeID', $NodeID, 0);
                 $this->SendDebug('Name', $Name, 0);
                 $this->SendDebug('NodeTypeSubType', sprintf('%04X', $NodeTypeSubType), 0);
+                $this->SendDebug('NodeTypeSubType', \KLF200\Node::$SubType[$NodeTypeSubType], 0);
                 $this->SendDebug('NodeType', ($NodeTypeSubType >> 6), 0);
                 $this->SendDebug('SubType', ($NodeTypeSubType & 0x003F), 0);
-                $this->SendDebug('ProductGroup', ord($APIData->Data[71]), 0);
-                $this->SendDebug('ProductType', ord($APIData->Data[72]), 0);
-                $this->SendDebug('NodeVariation', ord($APIData->Data[73]), 0);
-                $this->SendDebug('PowerMode', ord($APIData->Data[74]), 0);
-                $this->SendDebug('BuildNumber', ord($APIData->Data[75]), 0);
-                $this->SendDebug('SerialNumber', substr($APIData->Data, 76, 8), 1);
-                $this->SendDebug('State', ord($APIData->Data[84]), 0);
+                /*
+                  $this->SendDebug('ProductGroup', ord($APIData->Data[71]), 0);
+                  $this->SendDebug('ProductType', ord($APIData->Data[72]), 0);
+                  $this->SendDebug('NodeVariation', ord($APIData->Data[73]), 0);
+                  $this->SendDebug('PowerMode', ord($APIData->Data[74]), 0);
+                  $this->SendDebug('BuildNumber', ord($APIData->Data[75]), 0);
+                  $this->SendDebug('SerialNumber', substr($APIData->Data, 76, 8), 1);
+                 */
+                $State = ord($APIData->Data[84]);
+                $this->SendDebug('State', \KLF200\State::ToString($State), 0);
                 $CurrentPosition = unpack('n', substr($APIData->Data, 85, 2))[1];
                 $this->SendDebug('CurrentPosition', sprintf('%04X', $CurrentPosition), 0);
-                $Target = unpack('n', substr($APIData->Data, 87, 2))[1];
-                $this->SendDebug('Target', sprintf('%04X', $Target), 0);
+                /* $Target = unpack('n', substr($APIData->Data, 87, 2))[1];
+                  $this->SendDebug('Target', sprintf('%04X', $Target), 0);
+                 */
                 $FP1CurrentPosition = unpack('n', substr($APIData->Data, 89, 2))[1];
                 $this->SendDebug('FP1CurrentPosition', sprintf('%04X', $FP1CurrentPosition), 0);
                 $FP2CurrentPosition = unpack('n', substr($APIData->Data, 91, 2))[1];
                 $this->SendDebug('FP2CurrentPosition', sprintf('%04X', $FP2CurrentPosition), 0);
                 $FP3CurrentPosition = unpack('n', substr($APIData->Data, 93, 2))[1];
                 $this->SendDebug('FP3CurrentPosition', sprintf('%04X', $FP3CurrentPosition), 0);
-                $FP4CurrentPosition = unpack('n', substr($APIData->Data, 95, 2))[1];
-                $this->SendDebug('FP4CurrentPosition', sprintf('%04X', $FP4CurrentPosition), 0);
-                $RemainingTime = unpack('n', substr($APIData->Data, 97, 2))[1];
-                $this->SendDebug('RemainingTime', $RemainingTime, 0);
-                $TimeStamp = unpack('N', substr($APIData->Data, 99, 4))[1];
-                $this->SendDebug('TimeStamp', $TimeStamp, 0);
-                $this->SendDebug('TimeStamp', strftime('%H:%M:%S %d.%m.%Y', $TimeStamp), 0);
+                /*
+                  $FP4CurrentPosition = unpack('n', substr($APIData->Data, 95, 2))[1];
+                  $this->SendDebug('FP4CurrentPosition', sprintf('%04X', $FP4CurrentPosition), 0);
+                  $RemainingTime = unpack('n', substr($APIData->Data, 97, 2))[1];
+                  $this->SendDebug('RemainingTime', $RemainingTime, 0);
+                  $TimeStamp = unpack('N', substr($APIData->Data, 99, 4))[1];
+                  $this->SendDebug('TimeStamp', $TimeStamp, 0);
+                  $this->SendDebug('TimeStamp', strftime('%H:%M:%S %d.%m.%Y', $TimeStamp), 0);
+                 */
+                if ($NodeTypeSubType != $this->NodeSubType) {
+                    $this->RegisterNodeVariables($NodeTypeSubType);
+                }
+                $this->SetValues($CurrentPosition, $FP1CurrentPosition, $FP2CurrentPosition, $FP3CurrentPosition);
                 break;
             /* case \KLF200\APICommand::NODE_INFORMATION_CHANGED_NTF:
               break; */
@@ -132,7 +361,8 @@ class KLF200Node extends IPSModule
                   Data 17 - 20
                   TimeStamp
                  */
-                $this->SendDebug('State', ord($APIData->Data[1]), 0);
+                $State = ord($APIData->Data[1]);
+                $this->SendDebug('State', \KLF200\State::ToString($State), 0);
                 $CurrentPosition = unpack('n', substr($APIData->Data, 2, 2))[1];
                 $this->SendDebug('CurrentPosition', sprintf('%04X', $CurrentPosition), 0);
                 $Target = unpack('n', substr($APIData->Data, 4, 2))[1];
@@ -142,14 +372,20 @@ class KLF200Node extends IPSModule
                 $FP2CurrentPosition = unpack('n', substr($APIData->Data, 8, 2))[1];
                 $this->SendDebug('FP2CurrentPosition', sprintf('%04X', $FP2CurrentPosition), 0);
                 $FP3CurrentPosition = unpack('n', substr($APIData->Data, 10, 2))[1];
-                $this->SendDebug('FP3CurrentPosition', sprintf('%04X', $FP3CurrentPosition), 0);
-                $FP4CurrentPosition = unpack('n', substr($APIData->Data, 12, 2))[1];
-                $this->SendDebug('FP4CurrentPosition', sprintf('%04X', $FP4CurrentPosition), 0);
+                /*
+                  $this->SendDebug('FP3CurrentPosition', sprintf('%04X', $FP3CurrentPosition), 0);
+                  $FP4CurrentPosition = unpack('n', substr($APIData->Data, 12, 2))[1];
+                  $this->SendDebug('FP4CurrentPosition', sprintf('%04X', $FP4CurrentPosition), 0);
+                 */
                 $RemainingTime = unpack('n', substr($APIData->Data, 14, 2))[1];
                 $this->SendDebug('RemainingTime', $RemainingTime, 0);
                 $TimeStamp = unpack('N', substr($APIData->Data, 16, 4))[1];
                 $this->SendDebug('TimeStamp', $TimeStamp, 0);
                 $this->SendDebug('TimeStamp', strftime('%H:%M:%S %d.%m.%Y', $TimeStamp), 0);
+                if ($State == \KLF200\State::DONE) {
+                    // Wert $CurrentPosition umrechnen und setzen
+                    $this->SetValues($CurrentPosition, $FP1CurrentPosition, $FP2CurrentPosition, $FP3CurrentPosition);
+                }
                 break;
             case \KLF200\APICommand::COMMAND_RUN_STATUS_NTF:
                 // 00 06 01 00 00 FF FF 01 02 0E 00 00 00 
@@ -166,10 +402,8 @@ class KLF200Node extends IPSModule
                 $ParameterValue = unpack('n', substr($APIData->Data, 5, 2))[1];
                 $this->SendDebug('ParameterValue', sprintf('%04X', $ParameterValue), 0);
                 $RunStatus = ord($APIData->Data[7]);
-                $this->SendDebug('RunStatus', $RunStatus, 0);
                 $this->SendDebug('RunStatus', \KLF200\RunStatus::ToString($RunStatus), 0);
                 $StatusReply = ord($APIData->Data[8]);
-                $this->SendDebug('StatusReply', $StatusReply, 0);
                 $this->SendDebug('StatusReply', \KLF200\StatusReply::ToString($StatusReply), 0);
                 if ($RunStatus == \KLF200\RunStatus::EXECUTION_FAILED) {
                     trigger_error($this->Translate(\KLF200\RunStatus::ToString($RunStatus)), E_USER_NOTICE);
@@ -183,6 +417,8 @@ class KLF200Node extends IPSModule
                 break;
             case \KLF200\APICommand::STATUS_REQUEST_NTF:
                 //00 00 01 00 01 02 FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+                //01 05 01 01 00 01 01 
+
                 /*
                   Command                Data 1 – 2 Data 3   Data 4    Data 5    Data 6
                   GW_STATUS_REQUEST_NTF  SessionID  StatusID NodeIndex RunStatus StatusReply
@@ -191,6 +427,7 @@ class KLF200Node extends IPSModule
                  *      0 = “Target Position” or
                  *      1 = “Current Position” or
                  *      2 = “Remaining Time”
+                 *      01          00 C8 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
                  *      Data 8      Data 9 - 59
                  *      StatusCount ParameterData
                  * 
@@ -207,9 +444,9 @@ class KLF200Node extends IPSModule
                 $NodeIndex = ord($APIData->Data[3]);
                 $this->SendDebug('NodeIndex', $NodeIndex, 0);
                 $RunStatus = ord($APIData->Data[4]);
-                $this->SendDebug('RunStatus', $RunStatus, 0);
+                $this->SendDebug('RunStatus', \KLF200\RunStatus::ToString($RunStatus), 0);
                 $StatusReply = ord($APIData->Data[5]);
-                $this->SendDebug('StatusReply', $StatusReply, 0);
+                $this->SendDebug('StatusReply', \KLF200\StatusReply::ToString($StatusReply), 0);
                 $StatusType = ord($APIData->Data[6]);
                 $this->SendDebug('StatusType', $StatusType, 0);
                 if ($StatusType == 0xFF) {
@@ -217,10 +454,26 @@ class KLF200Node extends IPSModule
                     trigger_error($this->Translate(\KLF200\StatusReply::ToString($StatusReply)), E_USER_NOTICE);
                     return;
                 }
+                if ($StatusType == 0x01) {
+                    $ParameterCount = ord($APIData->Data[7]);
+                    $this->SendDebug('ParameterCount', $ParameterCount, 0);
+                    $ParameterData = substr($APIData->Data, 8);
+                    $Data = [
+                        0 => 0xF7FF,
+                        1 => 0xF7FF,
+                        2 => 0xF7FF,
+                        3 => 0xF7FF
+                    ];
+                    for ($index = 0; $index < $ParameterCount; $index++) {
+                        $Data[ord($ParameterData[$index * 3])] = unpack('n', substr($ParameterData, ($index * 3) + 1, 2))[1];
+                    }
+                    $this->SetValues($Data[0], $Data[1], $Data[2], $Data[3]);
+                }
                 break;
             case \KLF200\APICommand::WINK_SEND_NTF:
                 break;
             case \KLF200\APICommand::MODE_SEND_NTF:
+                break;
         }
     }
 
@@ -266,7 +519,7 @@ class KLF200Node extends IPSModule
           3       |Request Main info.
          */
         $Data = $this->NodeId . $this->GetSessionId() . chr(1) . $this->NodeId . "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
-        $Data .= chr(0) . chr(0b11100000) . chr(0);
+        $Data .= chr(1) . chr(0b11100000) . chr(0);
         $APIData = new \KLF200\APIData(\KLF200\APICommand::STATUS_REQUEST_REQ, $Data);
         $ResultAPIData = $this->SendAPIData($APIData);
         if ($ResultAPIData === null) {
@@ -290,6 +543,92 @@ class KLF200Node extends IPSModule
         $Data .= chr(0) . chr(0); // Data 6-7
         $Data .= pack('n', $Value); // Data 8-9
         $Data .= "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"; // Data 10-25
+        $Data .= "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"; // Data 26-41
+        $Data .= chr(1) . $this->NodeId . "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"; //Data 42-62
+        $Data .= chr(0); // Data 63
+        $Data .= chr(0) . chr(0) . chr(0); // Data 64-66
+        $APIData = new \KLF200\APIData(\KLF200\APICommand::COMMAND_SEND_REQ, $Data);
+        $ResultAPIData = $this->SendAPIData($APIData);
+        if ($ResultAPIData === null) {
+            return false;
+        }
+        return ord($ResultAPIData->Data[2]) == 1;
+    }
+
+    public function SetFunctionParameter1(int $Value)
+    {
+        /*
+          Command               Data 1 – 2  Data 3              Data 4          Data 5
+          GW_COMMAND_SEND_REQ   SessionID   CommandOriginator   PriorityLevel   ParameterActive
+          Data 6    Data 7  Data 8 - 41                     Data 42         Data 43 – 62    Data 63
+          FPI1      FPI2    FunctionalParameterValueArray   IndexArrayCount IndexArray      PriorityLevelLock
+          Data 64   Data 65 Data 66
+          PL_0_3    PL_4_7  LockTime
+         */
+        $Data = $this->NodeId . $this->GetSessionId(); //Data 1-2
+        $Data .= chr(1) . chr(3) . chr(0); // Data 3-5
+        $Data .= chr(0x80) . chr(0); // Data 6-7
+        $Data .= "\xD4\x00"; // Data 8-9 -> ignore
+        $Data .= pack('n', $Value); // Data 10-11
+        $Data .= "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"; // Data 12-25
+        $Data .= "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"; // Data 26-41
+        $Data .= chr(1) . $this->NodeId . "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"; //Data 42-62
+        $Data .= chr(0); // Data 63
+        $Data .= chr(0) . chr(0) . chr(0); // Data 64-66
+        $APIData = new \KLF200\APIData(\KLF200\APICommand::COMMAND_SEND_REQ, $Data);
+        $ResultAPIData = $this->SendAPIData($APIData);
+        if ($ResultAPIData === null) {
+            return false;
+        }
+        return ord($ResultAPIData->Data[2]) == 1;
+    }
+
+    public function SetFunctionParameter2(int $Value)
+    {
+        /*
+          Command               Data 1 – 2  Data 3              Data 4          Data 5
+          GW_COMMAND_SEND_REQ   SessionID   CommandOriginator   PriorityLevel   ParameterActive
+          Data 6    Data 7  Data 8 - 41                     Data 42         Data 43 – 62    Data 63
+          FPI1      FPI2    FunctionalParameterValueArray   IndexArrayCount IndexArray      PriorityLevelLock
+          Data 64   Data 65 Data 66
+          PL_0_3    PL_4_7  LockTime
+         */
+        $Data = $this->NodeId . $this->GetSessionId(); //Data 1-2
+        $Data .= chr(1) . chr(3) . chr(0); // Data 3-5
+        $Data .= chr(0x40) . chr(0); // Data 6-7
+        $Data .= "\xD4\x00"; // Data 8-9 -> ignore
+        $Data .= "\x00\x00"; // Data 10-11
+        $Data .= pack('n', $Value); // Data 12-13
+        $Data .= "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"; // Data 14-25
+        $Data .= "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"; // Data 26-41
+        $Data .= chr(1) . $this->NodeId . "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"; //Data 42-62
+        $Data .= chr(0); // Data 63
+        $Data .= chr(0) . chr(0) . chr(0); // Data 64-66
+        $APIData = new \KLF200\APIData(\KLF200\APICommand::COMMAND_SEND_REQ, $Data);
+        $ResultAPIData = $this->SendAPIData($APIData);
+        if ($ResultAPIData === null) {
+            return false;
+        }
+        return ord($ResultAPIData->Data[2]) == 1;
+    }
+
+    public function SetFunctionParameter3(int $Value)
+    {
+        /*
+          Command               Data 1 – 2  Data 3              Data 4          Data 5
+          GW_COMMAND_SEND_REQ   SessionID   CommandOriginator   PriorityLevel   ParameterActive
+          Data 6    Data 7  Data 8 - 41                     Data 42         Data 43 – 62    Data 63
+          FPI1      FPI2    FunctionalParameterValueArray   IndexArrayCount IndexArray      PriorityLevelLock
+          Data 64   Data 65 Data 66
+          PL_0_3    PL_4_7  LockTime
+         */
+        $Data = $this->NodeId . $this->GetSessionId(); //Data 1-2
+        $Data .= chr(1) . chr(3) . chr(0); // Data 3-5
+        $Data .= chr(0x20) . chr(0); // Data 6-7
+        $Data .= "\xD4\x00"; // Data 8-9 -> ignore
+        $Data .= "\x00\x00\x00\x00"; // Data 10-14
+        $Data .= pack('n', $Value); // Data 14-15
+        $Data .= "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"; // Data 16-25
         $Data .= "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"; // Data 26-41
         $Data .= chr(1) . $this->NodeId . "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"; //Data 42-62
         $Data .= chr(0); // Data 63

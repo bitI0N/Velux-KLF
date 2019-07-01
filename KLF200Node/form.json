@@ -17,7 +17,7 @@
                 },
                 {
                     "type": "Button",
-                    "caption": "Request state",
+                    "caption": "Request info",
                     "onClick": "KLF200_RequestNodeInformation($id);"
                 },
                 {
