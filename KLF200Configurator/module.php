@@ -7,7 +7,6 @@ eval('declare(strict_types=1);namespace KLF200Configurator {?>' . file_get_conte
 eval('declare(strict_types=1);namespace KLF200Configurator {?>' . file_get_contents(__DIR__ . '/../libs/helper/DebugHelper.php') . '}');
 
 /**
- * @property array $Zones
  * @property array $Nodes
  * @property int $WaitForNodes
  */
@@ -140,7 +139,7 @@ class KLF200Configurator extends IPSModule
     {
         $FoundNodes = $this->GetAllNodesInformation();
         $this->SendDebug('Found Nodes', $FoundNodes, 0);
-        $InstanceIDListNodes = []; //$this->GetInstanceList('{DEDC12F1-4CF7-4DD1-AE21-B03D7A7FADD7}', $Splitter, 'NodeID');
+        $InstanceIDListNodes = $this->GetInstanceList('{4EBD07B1-2962-4531-AC5F-7944789A9CE5}', $Splitter, 'NodeId');
         $this->SendDebug('IPS Nodes', $InstanceIDListNodes, 0);
         $NodeValues = [];
         foreach ($FoundNodes as $NodeID => $Node) {
@@ -165,7 +164,7 @@ class KLF200Configurator extends IPSModule
             }
             $AddValue['create'] = [
                 'moduleID'      => '{4EBD07B1-2962-4531-AC5F-7944789A9CE5}',
-                'configuration' => ['NodeID' => $NodeID]
+                'configuration' => ['NodeId' => $NodeID]
             ];
 
             $NodeValues[] = $AddValue;

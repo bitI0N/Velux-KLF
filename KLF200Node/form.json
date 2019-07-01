@@ -1,0 +1,27 @@
+{
+    "elements":
+            [
+
+                {
+                    "name": "NodeId",
+                    "type": "NumberSpinner",
+                    "caption": "Node ID"
+                }
+            ],
+    "actions":
+            [
+                {
+                    "type": "Button",
+                    "caption": "Request state",
+                    "onClick": "KLF200_RequestStatus($id);"
+                },
+                {
+                    "type": "Button",
+                    "caption": "Request state",
+                    "onClick": "KLF200_RequestNodeInformation($id);"
+                },
+                {
+                    "type": "TestCenter"
+                }
+            ]
+}

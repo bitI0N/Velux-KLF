@@ -57,6 +57,7 @@ class APIData
 
     public function GetSLIPData()
     {
+
         $TransportData = "\x00" . chr(strlen((string) $this->Data) + 3) . pack('n', $this->Command) . (string) $this->Data;
 
         $cs = 0;
@@ -114,6 +115,169 @@ class ErrorNTF
                 return 'Bad system table index.';
             case self::NOT_AUTHENTICATED:
                 return 'Not authenticated.';
+        }
+    }
+
+}
+
+class RunStatus
+{
+    const EXECUTION_COMPLETED = 0;
+    const EXECUTION_FAILED = 1;
+    const EXECUTION_ACTIVE = 2;
+
+    public static function ToString(int $RunStatus)
+    {
+        switch ($RunStatus) {
+            case self::EXECUTION_COMPLETED:
+                return 'Execution is completed with no errors.';
+            case self::EXECUTION_FAILED:
+                return 'Execution has failed.';
+            case self::EXECUTION_ACTIVE:
+                return 'Execution is still active.';
+        }
+    }
+
+}
+
+class StatusReply
+{
+    const UNKNOWN_STATUS_REPLY = 0x00;
+    const COMMAND_COMPLETED_OK = 0x01;
+    const NO_CONTACT = 0x02;
+    const MANUALLY_OPERATED = 0x03;
+    const BLOCKED = 0x04;
+    const WRONG_SYSTEMKEY = 0x05;
+    const PRIORITY_LEVEL_LOCKED = 0x06;
+    const REACHED_WRONG_POSITION = 0x07;
+    const ERROR_DURING_EXECUTION = 0x08;
+    const NO_EXECUTION = 0x09;
+    const CALIBRATING = 0x0A;
+    const POWER_CONSUMPTION_TOO_HIGH = 0x0B;
+    const POWER_CONSUMPTION_TOO_LOW = 0x0C;
+    const LOCK_POSITION_OPEN = 0x0D;
+    const MOTION_TIME_TOO_LONG__COMMUNICATION_ENDED = 0x0E;
+    const THERMAL_PROTECTION = 0x0F;
+    const PRODUCT_NOT_OPERATIONAL = 0x10;
+    const FILTER_MAINTENANCE_NEEDED = 0x11;
+    const BATTERY_LEVEL = 0x12;
+    const TARGET_MODIFIED = 0x13;
+    const MODE_NOT_IMPLEMENTED = 0x14;
+    const COMMAND_INCOMPATIBLE_TO_MOVEMENT = 0x15;
+    const USER_ACTION = 0x16;
+    const DEAD_BOLT_ERROR = 0x17;
+    const AUTOMATIC_CYCLE_ENGAGED = 0x18;
+    const WRONG_LOAD_CONNECTED = 0x19;
+    const COLOUR_NOT_REACHABLE = 0x1A;
+    const TARGET_NOT_REACHABLE = 0x1B;
+    const BAD_INDEX_RECEIVED = 0x1C;
+    const COMMAND_OVERRULED = 0x1D;
+    const NODE_WAITING_FOR_POWER = 0x1E;
+    const INFORMATION_CODE = 0xDF;
+    const PARAMETER_LIMITED = 0xE0;
+    const LIMITATION_BY_LOCAL_USER = 0xE1;
+    const LIMITATION_BY_USER = 0xE2;
+    const LIMITATION_BY_RAIN = 0xE3;
+    const LIMITATION_BY_TIMER = 0xE4;
+    const LIMITATION_BY_UPS = 0xE6;
+    const LIMITATION_BY_UNKNOWN_DEVICE = 0xE7;
+    const LIMITATION_BY_SAAC = 0xEA;
+    const LIMITATION_BY_WIND = 0xEB;
+    const LIMITATION_BY_MYSELF = 0xEC;
+    const LIMITATION_BY_AUTOMATIC_CYCLE = 0xED;
+    const LIMITATION_BY_EMERGENCY = 0xEE;
+
+    public static function ToString(int $StatusReply)
+    {
+        switch ($StatusReply) {
+            case self::UNKNOWN_STATUS_REPLY:
+                return 'unknown reply';
+            case self::COMMAND_COMPLETED_OK:
+                return 'no errors detected';
+            case self::NO_CONTACT:
+                return 'no communication to node';
+            case self::MANUALLY_OPERATED:
+                return 'manually operated by a user';
+            case self::BLOCKED:
+                return 'node has been blocked by an object';
+            case self::WRONG_SYSTEMKEY:
+                return 'the node contains a wrong system key';
+            case self::PRIORITY_LEVEL_LOCKED:
+                return 'the node is locked on this priority level';
+            case self::REACHED_WRONG_POSITION:
+                return 'node has stopped in another position than expected';
+            case self::ERROR_DURING_EXECUTION:
+                return 'an error has occurred during execution of command';
+            case self::NO_EXECUTION:
+                return 'no movement of the node parameter';
+            case self::CALIBRATING:
+                return 'the node is calibrating the parameters';
+            case self::POWER_CONSUMPTION_TOO_HIGH:
+                return 'the node power consumption is too high';
+            case self::POWER_CONSUMPTION_TOO_LOW:
+                return 'the node power consumption is too low';
+            case self::LOCK_POSITION_OPEN:
+                return 'door lock errors. (Door open during lock command)';
+            case self::MOTION_TIME_TOO_LONG__COMMUNICATION_ENDED:
+                return 'the target was not reached in time';
+            case self::THERMAL_PROTECTION:
+                return 'the node has gone into thermal protection mode';
+            case self::PRODUCT_NOT_OPERATIONAL:
+                return 'the node is not currently operational';
+            case self::FILTER_MAINTENANCE_NEEDED:
+                return 'the filter needs maintenance';
+            case self::BATTERY_LEVEL:
+                return 'the battery level is low';
+            case self::TARGET_MODIFIED:
+                return 'the node has modified the target value of the command';
+            case self::MODE_NOT_IMPLEMENTED:
+                return 'this node does not support the mode received';
+            case self::COMMAND_INCOMPATIBLE_TO_MOVEMENT:
+                return 'the node is unable to move in the right direction';
+            case self::USER_ACTION:
+                return 'dead bolt is manually locked during unlock command';
+            case self::DEAD_BOLT_ERROR:
+                return 'dead bolt error';
+            case self::AUTOMATIC_CYCLE_ENGAGED:
+                return 'the node has gone into automatic cycle mode';
+            case self::WRONG_LOAD_CONNECTED:
+                return 'wrong load on node';
+            case self::COLOUR_NOT_REACHABLE:
+                return 'that node is unable to reach received colour code';
+            case self::TARGET_NOT_REACHABLE:
+                return 'the node is unable to reach received target position';
+            case self::BAD_INDEX_RECEIVED:
+                return 'io-protocol has received an invalid index';
+            case self::COMMAND_OVERRULED:
+                return 'that the command was overruled by a new command';
+            case self::NODE_WAITING_FOR_POWER:
+                return 'that the node reported waiting for power';
+            case self::INFORMATION_CODE:
+                return 'an unknown error code received';
+            case self::PARAMETER_LIMITED:
+                return 'the parameter was limited by an unknown device';
+            case self::LIMITATION_BY_LOCAL_USER:
+                return 'the parameter was limited by local button';
+            case self::LIMITATION_BY_USER:
+                return 'the parameter was limited by a remote control';
+            case self::LIMITATION_BY_RAIN:
+                return 'the parameter was limited by a rain sensor';
+            case self::LIMITATION_BY_TIMER:
+                return 'the parameter was limited by a timer';
+            case self::LIMITATION_BY_UPS:
+                return 'the parameter was limited by a power supply';
+            case self::LIMITATION_BY_UNKNOWN_DEVICE:
+                return 'the parameter was limited by an unknown device';
+            case self::LIMITATION_BY_SAAC:
+                return 'the parameter was limited by a standalone automatic controller';
+            case self::LIMITATION_BY_WIND:
+                return 'the parameter was limited by a wind sensor';
+            case self::LIMITATION_BY_MYSELF:
+                return 'the parameter was limited by the node itself';
+            case self::LIMITATION_BY_AUTOMATIC_CYCLE:
+                return 'the parameter was limited by an automatic cycle';
+            case self::LIMITATION_BY_EMERGENCY:
+                return 'the parameter was limited by an emergency';
         }
     }
 

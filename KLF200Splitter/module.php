@@ -113,6 +113,7 @@ namespace {
      * @property array $ReplyAPIData
      * @property array $Nodes
      * @property int $WaitForNodes
+     * @property int $SessionId
      */
     class KLF200Splitter extends IPSModule
     {
@@ -145,6 +146,7 @@ namespace {
             $this->ReceiveBuffer = '';
             $this->ReplyAPIData = [];
             $this->Nodes = [];
+            $this->SessionId = 1;
         }
 
         /**
@@ -199,6 +201,7 @@ namespace {
                 if ($this->Connect()) {
                     $this->SetTimerInterval('KeepAlive', 600000);
                     $this->LogMessage('Successfully connected to KLF200.', KL_NOTIFY);
+                    $this->SessionId = 1;
                     $this->ReadProtocolVersion();
                     $this->SetGatewayTime();
                     $this->ReadGatewayState();
@@ -439,26 +442,6 @@ namespace {
         private function ReceiveEvent(\KLF200\APIData $APIData)
         {
             $this->SendDataToChilds($APIData);
-            return;
-            switch ($APIData->Command) {
-                case \KLF200\APICommand::GET_ALL_NODES_INFORMATION_NTF:
-                    $this->WaitForNodes--;
-                case \KLF200\APICommand::GET_NODE_INFORMATION_NTF:
-                    //00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 03 C0 0A 01 00 00 47 56 23 4B 26 11 20 00 03 FF F7 FF F7 FF F7 FF F7 FF F7 FF F7 FF 00 00 5D 0C FA 4B 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
-                    /* Data 1 Data 2 - 3 Data 4    Data 5 - 68 Data 69
-                      NodeID  Order      Placement Name        Velocity
-                      Data 70 - 71    Data 72      Data 73     Data 74       Data 75   Data 76
-                      NodeTypeSubType ProductGroup ProductType NodeVariation PowerMode BuildNumber
-                      Data 77 - 84 Data 85 Data 86 - 87    Data 88 - 89 Data 90 - 91       Data 92 - 93
-                      SerialNumber State   CurrentPosition Target       FP1CurrentPosition FP2CurrentPosition
-                      Data 94 - 95       Data 96 - 97       Data 98 - 99  Data 100 - 103 Data 104   Data 105 - 125
-                      FP3CurrentPosition FP4CurrentPosition RemainingTime TimeStamp      NbrOfAlias AliasArray
-                     */
-                    break;
-                case \KLF200\APICommand::GET_ALL_NODES_INFORMATION_FINISHED_NTF:
-                    $this->WaitForNodes = -1;
-                    break;
-            }
         }
 
         private function Connect()
@@ -540,7 +523,8 @@ namespace {
                 return serialize(new \KLF200\APIData(\KLF200\APICommand::ERROR_NTF, chr(\KLF200\ErrorNTF::TIMEOUT)));
             }
             $APIData = new \KLF200\APIData($JSONString);
-            return serialize($this->SendAPIData($APIData));
+            $result = @$this->SendAPIData($APIData);
+            return serialize($result);
         }
 
         /**
@@ -748,11 +732,32 @@ namespace {
             return true;
         }
 
+        private function GetSessionId()
+        {
+            $SessionId = ($this->SessionId + 1) & 0xffff;
+            $this->SessionId = $SessionId;
+            return pack('n', $SessionId);
+        }
+
         private function SendAPIData(\KLF200\APIData $APIData)
         {
+            //Statt SessionId benutzen wir einfach NodeID.
+            /*if (in_array($APIData->Command, [
+                        \KLF200\APICommand::COMMAND_SEND_REQ,
+                        \KLF200\APICommand::STATUS_REQUEST_REQ,
+                        \KLF200\APICommand::WINK_SEND_REQ,
+                        \KLF200\APICommand::SET_LIMITATION_REQ,
+                        \KLF200\APICommand::GET_LIMITATION_STATUS_REQ,
+                        \KLF200\APICommand::MODE_SEND_REQ,
+                        \KLF200\APICommand::ACTIVATE_SCENE_REQ,
+                        \KLF200\APICommand::STOP_SCENE_REQ,
+                        \KLF200\APICommand::ACTIVATE_PRODUCTGROUP_REQ
+                    ])) {
+                $APIData->Data = $this->GetSessionId() . $APIData->Data;
+            }*/
             try {
 
-                $this->SendDebug('Wait to send', $APIData, 0);
+                $this->SendDebug('Wait to send', $APIData, 1);
                 //$ResponseCommand = $APIData->Command + 1;
                 $this->lock('SendAPIData');
 
@@ -760,7 +765,7 @@ namespace {
                     throw new Exception($this->Translate('Socket not connected'), E_USER_NOTICE);
                 }
                 $Data = $APIData->GetSLIPData();
-                $this->SendDebug('Send', $APIData, 0);
+                $this->SendDebug('Send', $APIData, 1);
                 $this->SendDebug('Send SLIP Data', $Data, 1);
                 $TLS = $this->Multi_TLS;
                 $TLS->output($Data);
