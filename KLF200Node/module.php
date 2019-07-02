@@ -273,10 +273,119 @@ class KLF200Node extends IPSModule
         }
     }
 
+    public function SwitchMode(bool $Value)
+    {
+        return $this->SetMainParameter($Value ? 0xC800 : 0x0000);
+    }
+
+    public function ShutterMove(int $Value)
+    {
+        switch ($this->NodeSubType) {
+            case 0x0040: //Interior Venetian Blind
+            case 0x0080: //Roller Shutter
+            case 0x0081: //Adjustable slats rolling shutter
+            case 0x0082: //Roller Shutter With projection             
+            case 0x00C0: //Vertical Exterior Awning
+            case 0x0100: //Window opener
+            case 0x0101: //Window opener with integrated rain sensor
+            case 0x0140: //Garage door opener
+            case 0x017A: //Garage door opener
+            case 0x0200: //Rolling Door Opener
+            case 0x01C0: //Gate opener 
+            case 0x01FA: //Gate opener
+            case 0x0280: //Vertical Interior Blinds
+            case 0x0340: //Dual Roller Shutter
+            case 0x0400: //Horizontal awning
+            case 0x04C0: //Curtain track
+            case 0x0600: //Swinging Shutters
+            case 0x0601: //Swinging Shutter with independent handling of the leaves
+            case 0x0440: //Exterior Venetian blind
+            case 0x0480: //Louver blind
+            case 0x0500: //Ventilation point
+            case 0x0501: //Air inlet
+            case 0x0502: //Air transfer
+            case 0x0503: //Air outlet
+                return $this->SetMainParameter($Value);
+        }
+        trigger_error($this->Translate('Instance does not implement this function'), E_USER_NOTICE);
+        return false;
+    }
+
+    public function ShutterMoveUp()
+    {
+        return $this->SetMainParameter(0x0000);
+    }
+
+    public function ShutterMoveDown()
+    {
+        return $this->SetMainParameter(0xC800);
+    }
+
+    public function ShutterMoveStop()
+    {
+        return $this->SetMainParameter(0xD200);
+    }
+
+    public function OrientationSet(int $Value)
+    {
+        switch ($this->NodeSubType) {
+            case 0x0040:
+                return $this->SetFunctionParameter1($Value);
+            case 0x0440:
+            case 0x0081:
+            case 0x0480:
+                return $this->SetFunctionParameter3($Value);
+        }
+        trigger_error($this->Translate('Instance does not implement this function'), E_USER_NOTICE);
+        return false;
+    }
+
+    public function OrientationUp()
+    {
+        return $this->OrientationSet(0x0000);
+    }
+
+    public function OrientationDown()
+    {
+        return $this->OrientationSet(0xC800);
+    }
+
+    public function OrientationStop()
+    {
+        return $this->OrientationSet(0xD200);
+    }
+
+    public function DimSet(int $Value)
+    {
+        switch ($this->NodeSubType) {
+            case 0x0180: //Light
+            case 0x0540: //Exterior heating
+            case 0x057A: //Exterior heating
+                return $this->SetMainParameter($Value);
+        }
+        trigger_error($this->Translate('Instance does not implement this function'), E_USER_NOTICE);
+        return false;
+    }
+
+    public function DimUp()
+    {
+        return $this->DimSet(0x0000);
+    }
+
+    public function DimDown()
+    {
+        return $this->DimSet(0xC800);
+    }
+
+    public function DimStop()
+    {
+        return $this->DimSet(0xD200);
+    }
+
     public function RequestAction($Ident, $Value)
     {
         if (IPS_GetVariable($this->GetIDForIdent($Ident))['VariableType'] == VARIABLETYPE_BOOLEAN) {
-            $Value = $Value ? 0xc800 : 0x0000;
+            $Value = $Value ? 0xC800 : 0x0000;
         }
         switch ($Ident) {
             case 'MAIN':
