@@ -342,17 +342,17 @@ class KLF200Node extends IPSModule
 
     public function OrientationUp()
     {
-        return $this->OrientationSet(0x0000);
+        return $this->SetOrientation(0x0000);
     }
 
     public function OrientationDown()
     {
-        return $this->OrientationSet(0xC800);
+        return $this->SetOrientation(0xC800);
     }
 
     public function OrientationStop()
     {
-        return $this->OrientationSet(0xD200);
+        return $this->SetOrientation(0xD200);
     }
 
     public function DimSet(int $Value)

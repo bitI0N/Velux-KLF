@@ -33,7 +33,7 @@ namespace {
         public function loadClass($className)
         {
 
-            $file = __DIR__ . '/../libs/' . $className . '.php';
+            $file = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'libs' . DIRECTORY_SEPARATOR . str_replace('\\', DIRECTORY_SEPARATOR, $className) . '.php';
             if (file_exists($file)) {
                 require_once $file;
             }
@@ -742,19 +742,19 @@ namespace {
         private function SendAPIData(\KLF200\APIData $APIData)
         {
             //Statt SessionId benutzen wir einfach NodeID.
-            /*if (in_array($APIData->Command, [
-                        \KLF200\APICommand::COMMAND_SEND_REQ,
-                        \KLF200\APICommand::STATUS_REQUEST_REQ,
-                        \KLF200\APICommand::WINK_SEND_REQ,
-                        \KLF200\APICommand::SET_LIMITATION_REQ,
-                        \KLF200\APICommand::GET_LIMITATION_STATUS_REQ,
-                        \KLF200\APICommand::MODE_SEND_REQ,
-                        \KLF200\APICommand::ACTIVATE_SCENE_REQ,
-                        \KLF200\APICommand::STOP_SCENE_REQ,
-                        \KLF200\APICommand::ACTIVATE_PRODUCTGROUP_REQ
-                    ])) {
-                $APIData->Data = $this->GetSessionId() . $APIData->Data;
-            }*/
+            /* if (in_array($APIData->Command, [
+              \KLF200\APICommand::COMMAND_SEND_REQ,
+              \KLF200\APICommand::STATUS_REQUEST_REQ,
+              \KLF200\APICommand::WINK_SEND_REQ,
+              \KLF200\APICommand::SET_LIMITATION_REQ,
+              \KLF200\APICommand::GET_LIMITATION_STATUS_REQ,
+              \KLF200\APICommand::MODE_SEND_REQ,
+              \KLF200\APICommand::ACTIVATE_SCENE_REQ,
+              \KLF200\APICommand::STOP_SCENE_REQ,
+              \KLF200\APICommand::ACTIVATE_PRODUCTGROUP_REQ
+              ])) {
+              $APIData->Data = $this->GetSessionId() . $APIData->Data;
+              } */
             try {
 
                 $this->SendDebug('Wait to send', $APIData, 1);
