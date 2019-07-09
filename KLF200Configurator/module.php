@@ -117,6 +117,9 @@ class KLF200Configurator extends IPSModule
         $this->Nodes = [];
         $APIData = new \KLF200\APIData(\KLF200\APICommand::GET_ALL_NODES_INFORMATION_REQ);
         $ResultAPIData = $this->SendAPIData($APIData);
+        if ($ResultAPIData === null) {
+            return [];
+        }
         $State = ord($ResultAPIData->Data[0]);
         if ($State == 1) {
             return [];
@@ -389,12 +392,12 @@ class KLF200Configurator extends IPSModule
             }
             /** @var \KLF200\APIData $result */
             $ret = $this->SendDataToParent($APIData->ToJSON('{7B0F87CC-0408-4283-8E0E-2D48141E42E8}'));
-            $result = unserialize($ret);
-            $this->SendDebug('Response', $result, 0);
-            if ($result->Command == \KLF200\APICommand::ERROR_NTF) {
+            $ResponseAPIData = @unserialize($ret);
+            $this->SendDebug('Response', $ResponseAPIData, 1);
+            if ($ResponseAPIData->Command == \KLF200\APICommand::ERROR_NTF) {
                 return null;
             }
-            return $result;
+            return $ResponseAPIData;
         } catch (Exception $exc) {
             $this->SendDebug('Error', $exc->getMessage(), 0);
             return null;

@@ -760,7 +760,9 @@ namespace {
 
                 $this->SendDebug('Wait to send', $APIData, 1);
                 //$ResponseCommand = $APIData->Command + 1;
-                $this->lock('SendAPIData');
+                if (!$this->lock('SendAPIData')) {
+                    throw new Exception($this->Translate('Send is blocked for ') . \KLF200\APICommand::ToString($APIData->Command), E_USER_ERROR);
+                }
 
                 if ($this->State != \KLF200Splitter\TLSState::Connected) {
                     throw new Exception($this->Translate('Socket not connected'), E_USER_NOTICE);
@@ -791,7 +793,9 @@ namespace {
                 return $ResponseAPIData;
             } catch (Exception $exc) {
                 $this->SendDebug('Error', $exc->getMessage(), 0);
-                $this->unlock('SendAPIData');
+                if ($exc->getCode() != E_USER_ERROR) {
+                    $this->unlock('SendAPIData');
+                }
                 trigger_error($this->Translate($exc->getMessage()), E_USER_NOTICE);
                 return new \KLF200\APIData(\KLF200\APICommand::ERROR_NTF, chr(\KLF200\ErrorNTF::TIMEOUT));
             }
