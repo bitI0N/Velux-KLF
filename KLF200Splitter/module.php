@@ -298,6 +298,7 @@ namespace {
         public function ReadGatewayState()
         {
             $APIData = new \KLF200\APIData(\KLF200\APICommand::GET_STATE_REQ);
+            //$APIData = new \KLF200\APIData(\KLF200\APICommand::GET_SCENE_LIST_REQ);
             $ResultAPIData = $this->SendAPIData($APIData);
             //todo 
             // brauchen wir state? Oder substate?
@@ -564,10 +565,10 @@ namespace {
                             }
                         } else if ($this->State == \KLF200Splitter\TLSState::Connected) {
                             try {
-                                $TLS = $this->Multi_TLS;
+                                $TLS = $this->GetTLSContext();
                                 $TLS->encode($Part);
                                 $SLIPData = $TLS->input();
-                                $this->Multi_TLS = $TLS;
+                                $this->SetTLSContext($TLS);
                                 $this->DecodeSLIPData($SLIPData);
                             } catch (\PTLS\Exceptions\TLSAlertException $e) {
                                 $this->SendDebug('Error', $e->getMessage(), 0);
@@ -767,10 +768,10 @@ namespace {
                 $Data = $APIData->GetSLIPData();
                 $this->SendDebug('Send', $APIData, 1);
                 $this->SendDebug('Send SLIP Data', $Data, 1);
-                $TLS = $this->Multi_TLS;
+                $TLS = $this->GetTLSContext();
                 $TLS->output($Data);
                 $SendData = $TLS->decode();
-                $this->Multi_TLS = $TLS;
+                $this->SetTLSContext($TLS);
                 $JSON['DataID'] = '{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}';
                 $JSON['Buffer'] = utf8_encode($SendData);
                 $JsonString = json_encode($JSON);
@@ -834,6 +835,26 @@ namespace {
             } else {
                 $this->SendDebug2($Message, $Data, $Format);
             }
+        }
+
+        /**
+         * 
+         * @return \PTLS\TLSContext
+         */
+        private function GetTLSContext()
+        {
+            $this->lock('TLS');
+            return $this->Multi_TLS;
+        }
+
+        /**
+         * 
+         * @param \PTLS\TLSContext $TLS
+         */
+        private function SetTLSContext($TLS)
+        {
+            $this->Multi_TLS = $TLS;
+            $this->unlock('TLS');
         }
 
     }
