@@ -18,13 +18,12 @@ namespace {
 
         public function __construct($namespace = null)
         {
-
             $this->namespace = $namespace;
         }
 
         public function register()
         {
-            spl_autoload_register(array($this, 'loadClass'));
+            spl_autoload_register([$this, 'loadClass']);
         }
 
         public function loadClass($className)
@@ -40,7 +39,6 @@ namespace {
             require_once $file;
             restore_include_path();
         }
-
     }
 
 }
@@ -58,8 +56,9 @@ namespace KLF200Splitter {
 
         /**
          *  Liefert den Klartext zu einem Status.
-         * 
+         *
          * @param int $Code
+         *
          * @return string
          */
         public static function ToString(int $Code)
@@ -73,14 +72,12 @@ namespace KLF200Splitter {
                     return 'init';
             }
         }
-
     }
 
     //require_once __DIR__ . '/../libs/loadTLS.php';
 }
 
 namespace {
-
 
     /*
      * @addtogroup klf200
@@ -97,13 +94,15 @@ namespace {
     /**
      * KLF200Splitter Klasse implementiert die KLF 200 API
      * Erweitert IPSModule.
-     * 
-     * @package       KLF200
+     *
      * @author        Michael Tröger <micha@nall-chan.net>
      * @copyright     2019 Michael Tröger
      * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
+     *
      * @version       1.0
+     *
      * @example <b>Ohne</b>
+     *
      * @property string $Host
      * @property \KLF200Splitter\TLSState $State
      * @property string $WaitForTLSReceive
@@ -119,7 +118,6 @@ namespace {
      */
     class KLF200Splitter extends IPSModule
     {
-
         use \KLF200Splitter\Semaphore,
             \KLF200Splitter\BufferHelper,
             \KLF200Splitter\DebugHelper,
@@ -130,10 +128,9 @@ namespace {
             \KLF200Splitter\InstanceStatus::RequestAction as IORequestAction;
             \KLF200Splitter\DebugHelper::SendDebug as SendDebug2;
         }
+
         /**
          * Interne Funktion des SDK.
-         *
-         * @access public
          */
         public function Create()
         {
@@ -153,8 +150,6 @@ namespace {
 
         /**
          * Interne Funktion des SDK.
-         *
-         * @access public
          */
         public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
         {
@@ -194,7 +189,7 @@ namespace {
         /**
          * Wird über den Trait InstanceStatus ausgeführt wenn sich der Status des Parent ändert.
          * Oder wenn sich die Zuordnung zum Parent ändert.
-         * @access protected
+         *
          * @param int $State Der neue Status des Parent.
          */
         protected function IOChangeState($State)
@@ -229,8 +224,6 @@ namespace {
 
         /**
          * Interne Funktion des SDK.
-         * 
-         * @access public
          */
         public function GetConfigurationForParent()
         {
@@ -243,12 +236,12 @@ namespace {
             $Form = json_decode(file_get_contents(__DIR__ . '/form.json'), true);
             if (strlen($this->ReadPropertyString('Password')) > 31) {
                 $Form['actions'][] = [
-                    "type"  => "PopupAlert",
-                    "popup" => [
-                        "items" => [
+                    'type'  => 'PopupAlert',
+                    'popup' => [
+                        'items' => [
                             [
-                                "type"    => "Label",
-                                "caption" => "The maximum size for the password are 31 letters."
+                                'type'    => 'Label',
+                                'caption' => 'The maximum size for the password are 31 letters.'
                             ]
                         ]
                     ]
@@ -259,8 +252,6 @@ namespace {
 
         /**
          * Interne Funktion des SDK.
-         * 
-         * @access public
          */
         public function ApplyChanges()
         {
@@ -302,7 +293,7 @@ namespace {
             $APIData = new \KLF200\APIData(\KLF200\APICommand::GET_STATE_REQ);
             //$APIData = new \KLF200\APIData(\KLF200\APICommand::GET_SCENE_LIST_REQ);
             $ResultAPIData = $this->SendAPIData($APIData);
-            //todo 
+            //todo
             // brauchen wir state? Oder substate?
             /*
               Command           Data 1          Data 2      Data 3 – 6
@@ -441,7 +432,7 @@ namespace {
             return !$ResultAPIData->isError();
         }
 
-################## PRIVATE  
+        //################# PRIVATE
         private function ReceiveEvent(\KLF200\APIData $APIData)
         {
             $this->SendDataToChilds($APIData);
@@ -482,15 +473,14 @@ namespace {
 
         /**
          * Baut eine TLS Verbindung auf.
-         * 
-         * @access private
-         * @return boolean True wenn der TLS Handshake erfolgreich war.
+         *
+         * @return bool True wenn der TLS Handshake erfolgreich war.
          */
         private function CreateConnection()
         {
             $this->SendDebug('CreateConnection', '', 0);
-            try {
 
+            try {
                 $TLSconfig = \PTLS\TLSContext::getClientConfig([]);
                 $TLS = \PTLS\TLSContext::createTLS($TLSconfig);
                 if (!$this->TLSHandshake($TLS)) {
@@ -512,17 +502,17 @@ namespace {
             return true;
         }
 
-################## DATAPOINTS CHILDS
+        //################# DATAPOINTS CHILDS
+
         /**
          * Interne Funktion des SDK. Nimmt Daten von Childs entgegen und sendet Diese weiter.
-         * 
-         * @access public
+         *
          * @param string $JSONString
          * @result bool true wenn Daten gesendet werden konnten, sonst false.
          */
         public function ForwardData($JSONString)
         {
-            if ($this->State <> \KLF200Splitter\TLSState::Connected) {
+            if ($this->State != \KLF200Splitter\TLSState::Connected) {
                 return serialize(new \KLF200\APIData(\KLF200\APICommand::ERROR_NTF, chr(\KLF200\ErrorNTF::TIMEOUT)));
             }
             $APIData = new \KLF200\APIData($JSONString);
@@ -532,8 +522,7 @@ namespace {
 
         /**
          * Sendet die Events an die Childs.
-         * 
-         * @access private
+         *
          * @param \KLF200\APIData $APIData
          */
         private function SendDataToChilds(\KLF200\APIData $APIData)
@@ -541,11 +530,11 @@ namespace {
             $this->SendDataToChildren($APIData->ToJSON('{5242DAEF-EEBD-441F-AB0B-E83C01475B65}'));
         }
 
-################## DATAPOINTS PARENT    
+        //################# DATAPOINTS PARENT
+
         /**
          * Empfängt Daten vom Parent.
-         * 
-         * @access public
+         *
          * @param string $JSONString Das empfangene JSON-kodierte Objekt vom Parent.
          * @result bool True wenn Daten verarbeitet wurden, sonst false.
          */
@@ -565,7 +554,7 @@ namespace {
                             if (!$this->WriteTLSReceiveData($Part)) {
                                 break;
                             }
-                        } else if ($this->State == \KLF200Splitter\TLSState::Connected) {
+                        } elseif ($this->State == \KLF200Splitter\TLSState::Connected) {
                             try {
                                 $TLS = $this->GetTLSContext();
                                 $TLS->encode($Part);
@@ -673,7 +662,6 @@ namespace {
 
         //################# SENDQUEUE
 
-
         private function TLSHandshake(&$TLS)
         {
             $this->State = \KLF200Splitter\TLSState::init;
@@ -696,6 +684,7 @@ namespace {
                     break;
                 }
                 $this->SendDebug('Get TLS Handshake', $Result, 0);
+
                 try {
                     $TLS->encode($Result);
                     if ($TLS->isHandshaked()) {
@@ -759,7 +748,6 @@ namespace {
               $APIData->Data = $this->GetSessionId() . $APIData->Data;
               } */
             try {
-
                 $this->SendDebug('Wait to send', $APIData, 1);
                 $time = microtime(true);
                 while (true) {
@@ -838,7 +826,7 @@ namespace {
                 $this->SendDebug2($Message . ':Command', \KLF200\APICommand::ToString($Data->Command), 0);
                 if ($Data->isError()) {
                     $this->SendDebug2('Error', $Data->ErrorToString(), 0);
-                } else if ($Data->Data != '') {
+                } elseif ($Data->Data != '') {
                     $this->SendDebug2($Message . ':Data', $Data->Data, $Format);
                 }
             } else {
@@ -847,7 +835,6 @@ namespace {
         }
 
         /**
-         * 
          * @return \PTLS\TLSContext
          */
         private function GetTLSContext()
@@ -857,7 +844,6 @@ namespace {
         }
 
         /**
-         * 
          * @param \PTLS\TLSContext $TLS
          */
         private function SetTLSContext($TLS)
@@ -865,9 +851,7 @@ namespace {
             $this->Multi_TLS = $TLS;
             $this->unlock('TLS');
         }
-
     }
 
 }
-/** @} */
-    
+/* @} */
