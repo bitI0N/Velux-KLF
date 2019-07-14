@@ -16,7 +16,6 @@ eval('declare(strict_types=1);namespace KLF200Node {?>' . file_get_contents(__DI
  */
 class KLF200Node extends IPSModule
 {
-
     use \KLF200Node\Semaphore,
         \KLF200Node\BufferHelper,
         \KLF200Node\VariableHelper,
@@ -24,6 +23,7 @@ class KLF200Node extends IPSModule
         \KLF200Node\DebugHelper {
         \KLF200Node\DebugHelper::SendDebug as SendDebug2;
     }
+
     /**
      * Interne Funktion des SDK.
      */
@@ -57,8 +57,8 @@ class KLF200Node extends IPSModule
         $this->SessionId = 1;
         $NodeId = $this->ReadPropertyInteger('NodeId');
         $this->NodeId = chr($NodeId);
-        if (($NodeId < 0) or ( $NodeId > 255)) {
-            $Line = "NOTHING";
+        if (($NodeId < 0) or ($NodeId > 255)) {
+            $Line = 'NOTHING';
         } else {
             $NodeId = substr(json_encode(utf8_encode(chr($this->ReadPropertyInteger('NodeId'))), JSON_UNESCAPED_UNICODE), 1, -1);
             if (strlen($NodeId) == 6) {
@@ -144,7 +144,7 @@ class KLF200Node extends IPSModule
                 $this->UnregisterVariable('FP2');
                 $this->UnregisterVariable('FP3');
                 break;
-            case 0x01C0: //Gate opener 
+            case 0x01C0: //Gate opener
             case 0x01FA: //Gate opener
                 $this->RegisterVariableInteger('MAIN', $this->Translate('Position'), 'KLF200.Intensity.51200', 0);
                 $this->UnregisterVariable('FP1');
@@ -242,28 +242,28 @@ class KLF200Node extends IPSModule
     {
         // nur absolute Werte in Variablen schreiben
         $Main = @$this->GetIDForIdent('MAIN');
-        if (($Main > 0) and ( $CurrentPosition <= 0xC800)) {
+        if (($Main > 0) and ($CurrentPosition <= 0xC800)) {
             if (IPS_GetVariable($Main)['VariableType'] == VARIABLETYPE_BOOLEAN) {
                 $CurrentPosition = ($CurrentPosition == 0xC800);
             }
             $this->SetValue('MAIN', $CurrentPosition);
         }
         $FP1 = @$this->GetIDForIdent('FP1');
-        if (($FP1 > 0) and ( $FP1CurrentPosition <= 0xC800)) {
+        if (($FP1 > 0) and ($FP1CurrentPosition <= 0xC800)) {
             if (IPS_GetVariable($FP1)['VariableType'] == VARIABLETYPE_BOOLEAN) {
                 $FP1CurrentPosition = ($FP1CurrentPosition == 0xC800);
             }
             $this->SetValue('FP1', $FP1CurrentPosition);
         }
         $FP2 = @$this->GetIDForIdent('FP2');
-        if (($FP2 > 0) and ( $FP2CurrentPosition <= 0xC800)) {
+        if (($FP2 > 0) and ($FP2CurrentPosition <= 0xC800)) {
             if (IPS_GetVariable($FP2)['VariableType'] == VARIABLETYPE_BOOLEAN) {
                 $FP2CurrentPosition = ($FP2CurrentPosition == 0xC800);
             }
             $this->SetValue('FP2', $FP2CurrentPosition);
         }
         $FP3 = @$this->GetIDForIdent('FP3');
-        if (($FP3 > 0) and ( $FP3CurrentPosition <= 0xC800)) {
+        if (($FP3 > 0) and ($FP3CurrentPosition <= 0xC800)) {
             if (IPS_GetVariable($FP3)['VariableType'] == VARIABLETYPE_BOOLEAN) {
                 $FP3CurrentPosition = ($FP3CurrentPosition == 0xC800);
             }
@@ -282,14 +282,14 @@ class KLF200Node extends IPSModule
             case 0x0040: //Interior Venetian Blind
             case 0x0080: //Roller Shutter
             case 0x0081: //Adjustable slats rolling shutter
-            case 0x0082: //Roller Shutter With projection             
+            case 0x0082: //Roller Shutter With projection
             case 0x00C0: //Vertical Exterior Awning
             case 0x0100: //Window opener
             case 0x0101: //Window opener with integrated rain sensor
             case 0x0140: //Garage door opener
             case 0x017A: //Garage door opener
             case 0x0200: //Rolling Door Opener
-            case 0x01C0: //Gate opener 
+            case 0x01C0: //Gate opener
             case 0x01FA: //Gate opener
             case 0x0280: //Vertical Interior Blinds
             case 0x0340: //Dual Roller Shutter
@@ -497,7 +497,7 @@ class KLF200Node extends IPSModule
                 }
                 break;
             case \KLF200\APICommand::COMMAND_RUN_STATUS_NTF:
-                // 00 06 01 00 00 FF FF 01 02 0E 00 00 00 
+                // 00 06 01 00 00 FF FF 01 02 0E 00 00 00
                 /*
                   Command                   Data 1 - 2  Data 3      Data 4
                   GW_COMMAND_RUN_STATUS_NTF SessionID   StatusID    Index
@@ -525,8 +525,8 @@ class KLF200Node extends IPSModule
             case \KLF200\APICommand::SESSION_FINISHED_NTF:
                 break;
             case \KLF200\APICommand::STATUS_REQUEST_NTF:
-                //00 00 01 00 01 02 FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
-                //01 05 01 01 00 01 01 
+                //00 00 01 00 01 02 FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+                //01 05 01 01 00 01 01
 
                 /*
                   Command                Data 1 – 2 Data 3   Data 4    Data 5    Data 6
@@ -536,10 +536,10 @@ class KLF200Node extends IPSModule
                  *      0 = “Target Position” or
                  *      1 = “Current Position” or
                  *      2 = “Remaining Time”
-                 *      01          00 C8 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+                 *      01          00 C8 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
                  *      Data 8      Data 9 - 59
                  *      StatusCount ParameterData
-                 * 
+                 *
                   Data 7
                   StatusType
                  *      3 = “Main Info”
@@ -760,9 +760,10 @@ class KLF200Node extends IPSModule
     private function SendAPIData(\KLF200\APIData $APIData)
     {
         if ($this->NodeId == chr(-1)) {
-            return NULL;
+            return null;
         }
         $this->SendDebug('ForwardData', $APIData, 1);
+
         try {
             if (!$this->HasActiveParent()) {
                 throw new Exception($this->Translate('Instance has no active parent.'), E_USER_NOTICE);
@@ -789,12 +790,11 @@ class KLF200Node extends IPSModule
             $this->SendDebug2($Message . ':Command', \KLF200\APICommand::ToString($Data->Command), 0);
             if ($Data->isError()) {
                 $this->SendDebug2('Error', $Data->ErrorToString(), 0);
-            } else if ($Data->Data != '') {
+            } elseif ($Data->Data != '') {
                 $this->SendDebug2($Message . ':Data', $Data->Data, $Format);
             }
         } else {
             $this->SendDebug2($Message, $Data, $Format);
         }
     }
-
 }

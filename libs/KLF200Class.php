@@ -19,12 +19,14 @@ class APIData
 {
     /**
      * Alle Kommandos als Array.
+     *
      * @var int
      */
     public $Command;
 
     /**
      * Alle Daten des Kommandos.
+     *
      * @var string
      */
     public $Data;
@@ -57,7 +59,6 @@ class APIData
 
     public function GetSLIPData()
     {
-
         $TransportData = "\x00" . chr(strlen((string) $this->Data) + 3) . pack('n', $this->Command) . (string) $this->Data;
 
         $cs = 0;
@@ -82,7 +83,6 @@ class APIData
     {
         return \KLF200\ErrorNTF::ToString($this->LastError);
     }
-
 }
 
 class ErrorNTF
@@ -117,7 +117,6 @@ class ErrorNTF
                 return 'Not authenticated.';
         }
     }
-
 }
 
 class State
@@ -151,7 +150,6 @@ class State
                 return 'unknow state value: 0x' . sprintf('%02X', $State);
         }
     }
-
 }
 
 class RunStatus
@@ -171,7 +169,6 @@ class RunStatus
                 return 'Execution is still active.';
         }
     }
-
 }
 
 class StatusReply
@@ -314,7 +311,6 @@ class StatusReply
                 return 'the parameter was limited by an emergency';
         }
     }
-
 }
 
 class APICommand
@@ -828,50 +824,47 @@ class APICommand
                 return 'IGNORE_1';
         }
     }
-
 }
 
 class Node
 {
     public static $SubType = [
-        0x0040 => "Interior Venetian Blind",
-        0x0080 => "Roller Shutter",
-        0x0081 => "Adjustable slats rolling shutter",
-        0x0082 => "Roller Shutter With projection",
-        0x00C0 => "Vertical Exterior Awning",
-        0x0100 => "Window opener",
-        0x0101 => "Window opener with integrated rain sensor",
-        0x0140 => "Garage door opener",
-        0x017A => "Garage door opener",
-        0x0180 => "Light",
-        0x01BA => "Light only supporting on/off",
-        0x01C0 => "Gate opener",
-        0x01FA => "Gate opener",
-        0x0200 => "Rolling Door Opener",
-        0x0240 => "Door lock",
-        0x0241 => "Window lock",
-        0x0280 => "Vertical Interior Blinds",
-        0x0300 => "Beacon",
-        0x0340 => "Dual Roller Shutter",
-        0x0380 => "Heating Temperature Interface",
-        0x03C0 => "On/Off switch",
-        0x0400 => "Horizontal awning",
-        0x0440 => "Exterior Venetian blind",
-        0x0480 => "Louver blind",
-        0x04C0 => "Curtain track",
-        0x0500 => "Ventilation point",
-        0x0501 => "Air inlet",
-        0x0502 => "Air transfer",
-        0x0503 => "Air outlet",
-        0x0540 => "Exterior heating",
-        0x057A => "Exterior heating",
-        0x0580 => "Heat pump",
-        0x05C0 => "Intrusion alarm",
-        0x0600 => "Swinging Shutters",
-        0x0601 => "Swinging Shutter with independent handling of the leaves"
+        0x0040 => 'Interior Venetian Blind',
+        0x0080 => 'Roller Shutter',
+        0x0081 => 'Adjustable slats rolling shutter',
+        0x0082 => 'Roller Shutter With projection',
+        0x00C0 => 'Vertical Exterior Awning',
+        0x0100 => 'Window opener',
+        0x0101 => 'Window opener with integrated rain sensor',
+        0x0140 => 'Garage door opener',
+        0x017A => 'Garage door opener',
+        0x0180 => 'Light',
+        0x01BA => 'Light only supporting on/off',
+        0x01C0 => 'Gate opener',
+        0x01FA => 'Gate opener',
+        0x0200 => 'Rolling Door Opener',
+        0x0240 => 'Door lock',
+        0x0241 => 'Window lock',
+        0x0280 => 'Vertical Interior Blinds',
+        0x0300 => 'Beacon',
+        0x0340 => 'Dual Roller Shutter',
+        0x0380 => 'Heating Temperature Interface',
+        0x03C0 => 'On/Off switch',
+        0x0400 => 'Horizontal awning',
+        0x0440 => 'Exterior Venetian blind',
+        0x0480 => 'Louver blind',
+        0x04C0 => 'Curtain track',
+        0x0500 => 'Ventilation point',
+        0x0501 => 'Air inlet',
+        0x0502 => 'Air transfer',
+        0x0503 => 'Air outlet',
+        0x0540 => 'Exterior heating',
+        0x057A => 'Exterior heating',
+        0x0580 => 'Heat pump',
+        0x05C0 => 'Intrusion alarm',
+        0x0600 => 'Swinging Shutters',
+        0x0601 => 'Swinging Shutter with independent handling of the leaves'
     ];
-
 }
 
-/** @} */
-    
+/* @} */
