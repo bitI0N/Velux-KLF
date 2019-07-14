@@ -9,18 +9,18 @@
                     "items": [
                         {
                             "type": "Button",
-                            "label": "Discover node",
+                            "label": "Discover device",
                             "onClick": ""
                         }, 
                         {
                             "type": "PopupButton",
-                            "caption": "Remove node",
+                            "caption": "Remove device",
                             "popup": {
-                                "caption": "Select node to remove",
+                                "caption": "Select device to remove",
                                 "items": [
                                     {
                                         "type": "Button",
-                                        "label": "Remove node",
+                                        "label": "Remove device",
                                         "onClick": ""
                                     },
                                     {

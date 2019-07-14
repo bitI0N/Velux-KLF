@@ -12,12 +12,12 @@
             [
                 {
                     "type": "Button",
-                    "caption": "Request state",
+                    "caption": "Request device state",
                     "onClick": "KLF200_RequestStatus($id);"
                 },
                 {
                     "type": "Button",
-                    "caption": "Request info",
+                    "caption": "Request device information",
                     "onClick": "KLF200_RequestNodeInformation($id);"
                 },
                 {

@@ -63,25 +63,12 @@ class KLF200Configurator extends IPSModule
                 break;
             case \KLF200\APICommand::GET_ALL_NODES_INFORMATION_NTF:
                 $this->WaitForNodes--;
-                //00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 03 C0 0A 01 00 00 47 56 23 4B 26 11 20 00 03 FF F7 FF F7 FF F7 FF F7 FF F7 FF F7 FF 00 00 5D 0C FA 4B 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
-                /* Data 1 Data 2 - 3 Data 4    Data 5 - 68 Data 69
-                  NodeID  Order      Placement Name        Velocity
-                  Data 70 - 71    Data 72      Data 73     Data 74       Data 75   Data 76
-                  NodeTypeSubType ProductGroup ProductType NodeVariation PowerMode BuildNumber
-                  Data 77 - 84 Data 85 Data 86 - 87    Data 88 - 89 Data 90 - 91       Data 92 - 93
-                  SerialNumber State   CurrentPosition Target       FP1CurrentPosition FP2CurrentPosition
-                  Data 94 - 95       Data 96 - 97       Data 98 - 99  Data 100 - 103 Data 104   Data 105 - 125
-                  FP3CurrentPosition FP4CurrentPosition RemainingTime TimeStamp      NbrOfAlias AliasArray
-                 */
                 $NodeID = ord($APIData->Data[0]);
                 $Name = trim(utf8_decode(substr($APIData->Data, 4, 64)));
                 $NodeTypeSubType = unpack('n', substr($APIData->Data, 69, 2))[1];
                 $this->SendDebug('NodeID', $NodeID, 0);
                 $this->SendDebug('Name', $Name, 0);
                 $this->SendDebug('NodeTypeSubType', $NodeTypeSubType, 0);
-                //$this->SendDebug('ProductGroup', ord($APIData->Data[71]), 0);
-                //$this->SendDebug('ProductType', ord($APIData->Data[72]), 0);
-                //$this->SendDebug('NodeVariation', ord($APIData->Data[73]), 0);
                 $this->SendDebug('SerialNumber', substr($APIData->Data, 76, 8), 1);
                 $this->SendDebug('BuildNumber', ord($APIData->Data[75]), 0);
                 $Nodes = $this->Nodes;
@@ -326,9 +313,6 @@ class KLF200Configurator extends IPSModule
             $ret = @$this->SendDataToParent($APIData->ToJSON('{7B0F87CC-0408-4283-8E0E-2D48141E42E8}'));
             $ResponseAPIData = @unserialize($ret);
             $this->SendDebug('Response', $ResponseAPIData, 1);
-            /* if ($ResponseAPIData->isError()) {
-              return null;
-              } */
             return $ResponseAPIData;
         } catch (Exception $exc) {
             $this->SendDebug('Error', $exc->getMessage(), 0);

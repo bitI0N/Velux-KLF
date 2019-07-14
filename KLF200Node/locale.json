@@ -1,0 +1,31 @@
+{
+    "translations": {
+        "de": {
+            "Request device state": "Lese Gerätestatus",
+            "Request device information": "Lese Geräte-Informationen",
+            "No error.": "Kein Fehler.",
+            "Timeout.": "Zeitüberschreitung.",
+            "Not further defined error.": "Nicht weiter definierter Fehler.",
+            "Unknown command or command is not accepted at this state.": "Unbekanntes Kommando oder Kommando wird zu diesem Zeitpunkt nicht aktzeptiert.",
+            "Error on Frame Structure.": "Fehler in Frame Struktur.",
+            "Busy. Try again later.": "Beschäftigt. Später nochmal versuchen.",
+            "Bad system table index.": "Ungültiger Index der Systemtabelle.",
+            "Not authenticated.": "Nicht berechtigt.",
+            "Position": "Position",
+            "Orientation": "Orientierung",
+            "Intensity": "Intensität",
+            "State": "Status",
+            "Lock": "Schloss",
+            "Dual Roller Shutter": "Doppelrollladen",
+            "Switch": "Schalter",
+            "Upper position": "Obere Position",
+            "Lower position": "Untere Position",
+            "Closed": "Geschlossen",
+            "Instance does not implement this function": "Instanze unterstützt diese Funktion nicht",
+            "Invalid Ident": "Ungültuger Ident",
+            "Request rejected": "Anfrage abgelehnt",
+            "Invalid node index": "Ungüliger Node-Eintrag",
+            "Instance has no active parent.": "Instanz hat keinen aktiven Parent."
+        }
+    }
+}

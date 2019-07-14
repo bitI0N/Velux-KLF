@@ -767,7 +767,7 @@ namespace {
                         break;
                     }
                     if (microtime(true) - $time > 5) {
-                        throw new Exception($this->Translate('Send is blocked for ') . \KLF200\APICommand::ToString($APIData->Command), E_USER_ERROR);
+                        throw new Exception($this->Translate('Send is blocked for: ') . \KLF200\APICommand::ToString($APIData->Command), E_USER_ERROR);
                     }
                 }
                 if ($this->State != \KLF200Splitter\TLSState::Connected) {
@@ -788,7 +788,7 @@ namespace {
                 $ResponseAPIData = $this->ReadReplyAPIData();
 
                 if ($ResponseAPIData === null) {
-                    throw new Exception($this->Translate('Timeout'), E_USER_NOTICE);
+                    throw new Exception($this->Translate('Timeout.'), E_USER_NOTICE);
                 }
                 $this->SendDebug('Response', $ResponseAPIData, 1);
                 $this->unlock('SendAPIData');

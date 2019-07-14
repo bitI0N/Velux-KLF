@@ -106,9 +106,9 @@ class ErrorNTF
             case self::NOT_DEFINED:
                 return 'Not further defined error.';
             case self::UNKNOW_COMMAND:
-                return 'Unknown Command or command is not accepted at this state.';
+                return 'Unknown command or command is not accepted at this state.';
             case self::ERROR_ON_FRAME_STRUCTURE:
-                return 'ERROR on Frame Structure.';
+                return 'Error on Frame Structure.';
             case self::BUSY:
                 return 'Busy. Try again later.';
             case self::BAD_SYSTEM_TABLE_INDEX:

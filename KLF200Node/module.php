@@ -21,7 +21,6 @@ class KLF200Node extends IPSModule
         \KLF200Node\BufferHelper,
         \KLF200Node\VariableHelper,
         \KLF200Node\VariableProfileHelper,
-    //\KLF200Node\AttributeArrayHelper,
         \KLF200Node\DebugHelper {
         \KLF200Node\DebugHelper::SendDebug as SendDebug2;
     }

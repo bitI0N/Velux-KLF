@@ -11,12 +11,12 @@
             [
                 {
                     "type": "Button",
-                    "caption": "Request Version",
+                    "caption": "Request KLF version",
                     "onClick": "KLF200_ReadGatewayVersion($id,'ALL');"
                 },
                 {
                     "type": "Button",
-                    "caption": "Request State",
+                    "caption": "Request KLF state",
                     "onClick": "KLF200_ReadGatewayState($id,'ALL');"
                 }
             ],
