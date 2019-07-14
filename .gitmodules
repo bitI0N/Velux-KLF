@@ -12,4 +12,4 @@
 	url = https://github.com/Spomky-Labs/php-aes-gcm
 [submodule "libs/PHP-TLS"]
 	path = libs/PHP-TLS
-	url = https://github.com/rnaga/PHP-TLS
+url=https://github.com/Nall-chan/PHP-TLS
