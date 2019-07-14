@@ -185,6 +185,21 @@ class KLF200Configurator extends IPSModule
         return $NodeValues;
     }
 
+    private function GetDeleteNodeConfigFormValues()
+    {
+        foreach ($this->Nodes as $NodeID => $Node) {
+            $AddValue = [
+                'nodeid' => $NodeID,
+                'name'   => $Node['Name'],
+                'type'   => \KLF200\Node::$SubType[$Node['NodeTypeSubType']]
+            ];
+            $NodeValues[] = $AddValue;
+        }
+
+
+        return $NodeValues;
+    }
+
     /*
       private function GetRemoteConfigFormValues(int $Splitter)
       {
@@ -369,8 +384,22 @@ class KLF200Configurator extends IPSModule
         $NodeValues = $this->GetNodeConfigFormValues($Splitter);
 //        $RemoteValues = $this->GetRemoteConfigFormValues($Splitter);
         //      $NetworkValues = $this->GetNetworkConfigFormValues($Splitter);
-        $Form['actions'][0]['values'] = $NodeValues; //array_merge($ZoneValues, $RemoteValues, $NetworkValues);
+        $Form['actions'][1]['values'] = $NodeValues; //array_merge($ZoneValues, $RemoteValues, $NetworkValues);
+        $Form['actions'][0]['items'][0]['items'][0]['onClick'] = <<<'EOT'
+                KLF200_DiscoveryNodes($id);
+                echo 
+                EOT . ' "' . $this->Translate('The view will reload after discovery is finished.') . '";';
 
+        $DeleteNodeValues = $this->GetDeleteNodeConfigFormValues();
+        $Form['actions'][0]['items'][0]['items'][1]['popup']['items'][1]['values'] = $DeleteNodeValues;
+        $Form['actions'][0]['items'][0]['items'][1]['popup']['items'][0]['onClick'] = <<<'EOT'
+                KLF200_RemoveNodes($id,$RemoveNode['nodeid']);
+                echo 
+                EOT . ' "' . $this->Translate('The view will reload after remove is finished.') . '";';
+        $Form['actions'][0]['items'][0]['items'][2]['onClick'] = <<<'EOT'
+                KLF200_Reboot($id);
+                echo
+                EOT . ' "' . $this->Translate('The KLF200 will now reboot.') . '";';
         $this->SendDebug('FORM', json_encode($Form), 0);
         $this->SendDebug('FORM', json_last_error_msg(), 0);
         return json_encode($Form);

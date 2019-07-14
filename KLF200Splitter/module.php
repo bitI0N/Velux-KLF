@@ -12,9 +12,6 @@ namespace {
     $autoloader = new \AutoloaderTLS('PTLS');
     $autoloader->register();
 
-    //use PTLS\TLSContext;
-    //use PTLS\Exceptions\TLSAlertException;
-
     class AutoloaderTLS
     {
         private $namespace;
@@ -32,11 +29,17 @@ namespace {
 
         public function loadClass($className)
         {
-
-            $file = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'libs' . DIRECTORY_SEPARATOR . str_replace('\\', DIRECTORY_SEPARATOR, $className) . '.php';
-            if (file_exists($file)) {
-                require_once $file;
-            }
+            $libpath = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'libs' . DIRECTORY_SEPARATOR;
+            $includes[] = $libpath . 'assert' . DIRECTORY_SEPARATOR . 'lib';
+            $includes[] = $libpath . 'phpecc' . DIRECTORY_SEPARATOR . 'src';
+            $includes[] = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'libs';
+            set_include_path(get_include_path() . PATH_SEPARATOR . implode(PATH_SEPARATOR, $includes));
+            $className = str_replace('Mdanter\\Ecc\\', '', $className);
+            $file = str_replace('\\', DIRECTORY_SEPARATOR, $className) . '.php';
+//            if (file_exists($file)) {
+            require_once $file;
+            //          }
+            restore_include_path();
         }
 
     }
@@ -759,11 +762,15 @@ namespace {
             try {
 
                 $this->SendDebug('Wait to send', $APIData, 1);
-                //$ResponseCommand = $APIData->Command + 1;
-                if (!$this->lock('SendAPIData')) {
-                    throw new Exception($this->Translate('Send is blocked for ') . \KLF200\APICommand::ToString($APIData->Command), E_USER_ERROR);
+                $time = microtime(true);
+                while (true) {
+                    if ($this->lock('SendAPIData')) {
+                        break;
+                    }
+                    if (microtime(true) - $time > 5) {
+                        throw new Exception($this->Translate('Send is blocked for ') . \KLF200\APICommand::ToString($APIData->Command), E_USER_ERROR);
+                    }
                 }
-
                 if ($this->State != \KLF200Splitter\TLSState::Connected) {
                     throw new Exception($this->Translate('Socket not connected'), E_USER_NOTICE);
                 }
@@ -784,7 +791,6 @@ namespace {
                 if ($ResponseAPIData === null) {
                     throw new Exception($this->Translate('Timeout'), E_USER_NOTICE);
                 }
-                //$ResponseAPIData = new \KLF200\APIData($ResponseCommand, $ResponseData);
                 $this->SendDebug('Response', $ResponseAPIData, 1);
                 $this->unlock('SendAPIData');
                 if ($ResponseAPIData->isError()) {

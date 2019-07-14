@@ -73,7 +73,7 @@ class KLF200Node extends IPSModule
         $this->SetReceiveDataFilter('(' . $Line . ')');
         $this->SendDebug('FILTER', $Line, 0);
         $this->NodeSubType = $this->ReadAttributeInteger('NodeSubType');
-
+        $this->SetSummary(sprintf('%04X', $this->NodeSubType));
         $this->RegisterProfileInteger('KLF200.Intensity.51200', '', '', ' %', 0, 0xC800, 1);
         $this->RegisterProfileInteger('KLF200.RollerShutter', 'Jalousie', '', ' %', 0, 0xC800, 1);
         $this->RegisterProfileInteger('KLF200.Slats', 'Speedo', '', ' %', 0, 0xC800, 1);
@@ -91,7 +91,6 @@ class KLF200Node extends IPSModule
 
     private function RegisterNodeVariables(int $NodeTypeSubType)
     {
-        //$OldNodeTypeSubType = $this->NodeSubType;
         $this->NodeSubType = $NodeTypeSubType;
         switch ($NodeTypeSubType) {
             case 0x0040: //Interior Venetian Blind
@@ -455,6 +454,8 @@ class KLF200Node extends IPSModule
                   $this->SendDebug('TimeStamp', strftime('%H:%M:%S %d.%m.%Y', $TimeStamp), 0);
                  */
                 if ($NodeTypeSubType != $this->NodeSubType) {
+                    $this->WriteAttributeInteger('NodeSubType', $NodeTypeSubType);
+                    $this->SetSummary(sprintf('%04X', $NodeTypeSubType));
                     $this->RegisterNodeVariables($NodeTypeSubType);
                 }
                 $this->SetValues($CurrentPosition, $FP1CurrentPosition, $FP2CurrentPosition, $FP3CurrentPosition);

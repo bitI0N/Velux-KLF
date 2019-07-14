@@ -1,11 +1,78 @@
 {
     "actions": [
         {
+            "type": "ExpansionPanel",
+            "caption": "Gateway commands",
+            "items": [
+                { 
+                    "type": "RowLayout",
+                    "items": [
+                        {
+                            "type": "Button",
+                            "label": "Discover node",
+                            "onClick": ""
+                        }, 
+                        {
+                            "type": "PopupButton",
+                            "caption": "Remove node",
+                            "popup": {
+                                "caption": "Select node to remove",
+                                "items": [
+                                    {
+                                        "type": "Button",
+                                        "label": "Remove node",
+                                        "onClick": ""
+                                    },
+                                    {
+                                        "type": "List",
+                                        "name": "RemoveNode",
+                                        "add": false,
+                                        "delete": false,
+                                        "sort": {
+                                            "column": "nodeid",
+                                            "direction": "ascending"
+                                        },
+                                        "columns": [
+                                            {
+                                                "caption": "Node ID",
+                                                "name": "nodeid",
+                                                "width": "80px"
+                                            }, 
+                                            {
+                                                "caption": "Type",
+                                                "name": "type",
+                                                "width": "200px"
+                                            },
+                                            {
+                                                "caption": "Name",
+                                                "name": "name",
+                                                "width": "auto"
+                                            }
+                                        ],
+                                        "values": []
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "Button",
+                            "label": "Reboot Gateway",
+                            "onClick": ""
+                        }
+                    ]
+                }
+            ]
+        },
+        {
             "type": "Configurator",
             "name": "Config",
             "caption": "",
             "add": false,
             "delete": true,
+            "sort": {
+                "column": "nodeid",
+                "direction": "ascending"
+            },
             "columns": [{
                     "caption": "Node ID",
                     "name": "nodeid",
