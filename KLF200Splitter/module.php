@@ -34,13 +34,10 @@ namespace {
             $includes[] = $libpath . 'assert' . DIRECTORY_SEPARATOR . 'lib';
             $includes[] = $libpath . 'phpecc' . DIRECTORY_SEPARATOR . 'src';
             $includes[] = $libpath . 'PHP-TLS' . DIRECTORY_SEPARATOR . 'src';
-//            $includes[] = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'libs';
             set_include_path(get_include_path() . PATH_SEPARATOR . implode(PATH_SEPARATOR, $includes));
             $className = str_replace(['Mdanter\\Ecc\\', 'AESGCM\\', 'PTLS\\'], ['', '', ''], $className);
             $file = str_replace('\\', DIRECTORY_SEPARATOR, $className) . '.php';
-//            if (file_exists($file)) {
             require_once $file;
-            //          }
             restore_include_path();
         }
 

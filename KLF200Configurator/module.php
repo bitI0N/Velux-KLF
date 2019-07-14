@@ -38,8 +38,10 @@ class KLF200Configurator extends IPSModule
             \KLF200\APICommand::GET_ALL_GROUPS_INFORMATION_FINISHED_NTF,
             \KLF200\APICommand::GET_ALL_NODES_INFORMATION_NTF,
             \KLF200\APICommand::GET_ALL_NODES_INFORMATION_FINISHED_NTF,
-            \KLF200\APICommand::GET_SCENE_INFOAMATION_NTF,
-            \KLF200\APICommand::GET_SCENE_LIST_NTF
+            \KLF200\APICommand::GET_SCENE_INFORMATION_NTF,
+            \KLF200\APICommand::GET_SCENE_LIST_NTF,
+            \KLF200\APICommand::CS_DISCOVER_NODES_NTF,
+            \KLF200\APICommand::CS_SYSTEM_TABLE_UPDATE_NTF
         ];
 
         if (count($APICommands) > 0) {
@@ -55,6 +57,10 @@ class KLF200Configurator extends IPSModule
     private function ReceiveEvent(\KLF200\APIData $APIData)
     {
         switch ($APIData->Command) {
+            case \KLF200\APICommand::CS_DISCOVER_NODES_NTF:
+            case \KLF200\APICommand::CS_SYSTEM_TABLE_UPDATE_NTF:
+                // Reload ConfigForm;
+                break;
             case \KLF200\APICommand::GET_ALL_NODES_INFORMATION_NTF:
                 $this->WaitForNodes--;
                 //00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 03 C0 0A 01 00 00 47 56 23 4B 26 11 20 00 03 FF F7 FF F7 FF F7 FF F7 FF F7 FF F7 FF 00 00 5D 0C FA 4B 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
@@ -117,7 +123,7 @@ class KLF200Configurator extends IPSModule
         $this->Nodes = [];
         $APIData = new \KLF200\APIData(\KLF200\APICommand::GET_ALL_NODES_INFORMATION_REQ);
         $ResultAPIData = $this->SendAPIData($APIData);
-        if ($ResultAPIData === null) {
+        if ($ResultAPIData->isError()) {
             return [];
         }
         $State = ord($ResultAPIData->Data[0]);
@@ -133,6 +139,45 @@ class KLF200Configurator extends IPSModule
             usleep(1000);
         }
         return $this->Nodes;
+    }
+
+    public function DiscoveryNodes()
+    {
+        $APIData = new \KLF200\APIData(\KLF200\APICommand::CS_DISCOVER_NODES_REQ, "\x00");
+        $ResultAPIData = $this->SendAPIData($APIData);
+        if ($ResultAPIData->isError()) {
+            trigger_error($this->Translate($ResultAPIData->ErrorToString()), E_USER_NOTICE);
+            return false;
+        }
+        return true;
+    }
+
+    public function RebootGateway()
+    {
+        $APIData = new \KLF200\APIData(\KLF200\APICommand::REBOOT_REQ);
+        $ResultAPIData = $this->SendAPIData($APIData);
+        if ($ResultAPIData->isError()) {
+            trigger_error($this->Translate($ResultAPIData->ErrorToString()), E_USER_NOTICE);
+            return false;
+        }
+        return true;
+    }
+
+    public function RemoveNodes(int $Node)
+    {
+        if (($Node < 0) or ( $Node > 199)) {
+            trigger_error(sprintf($this->Translate('%s out of range.'), 'Node'), E_USER_NOTICE);
+            return false;
+        }
+        $Data = "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
+        $Data[intdiv($Node, 8)] = chr(1 << ($Node % 8));
+        $APIData = new \KLF200\APIData(\KLF200\APICommand::CS_REMOVE_NODES_REQ, $Data);
+        $ResultAPIData = $this->SendAPIData($APIData);
+        if ($ResultAPIData->isError()) {
+            trigger_error($this->Translate($ResultAPIData->ErrorToString()), E_USER_NOTICE);
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -200,151 +245,6 @@ class KLF200Configurator extends IPSModule
         return $NodeValues;
     }
 
-    /*
-      private function GetRemoteConfigFormValues(int $Splitter)
-      {
-      $APIDataRemoteList = new \OnkyoAVR\ISCP_API_Data(\OnkyoAVR\ISCP_API_Commands::GetBuffer, \OnkyoAVR\ISCP_API_Commands::ControlList);
-      $FoundRemotes = $this->Send($APIDataRemoteList);
-      $this->SendDebug('Found Remotes', $FoundRemotes, 0);
-      $InstanceIDListRemotes = $this->GetInstanceList('{C7EA583D-2BAC-41B7-A85A-AD0DF648E514}', $Splitter, 'Type');
-      $this->SendDebug('IPS Remotes', $InstanceIDListRemotes, 0);
-      $RemoteValues = [];
-      $HasTuner = false;
-      foreach ($FoundRemotes as $RemoteName) {
-      $RemoteID = \OnkyoAVR\Remotes::ToRemoteID($RemoteName);
-      if ($RemoteID < 0) {
-      continue;
-      }
-      if ($RemoteID == \OnkyoAVR\Remotes::TUN) {
-      $HasTuner = true;
-      continue;
-      }
-      $InstanceIDRemote = array_search($RemoteID, $InstanceIDListRemotes);
-      if ($InstanceIDRemote !== false) {
-      $AddValue = [
-      'instanceID' => $InstanceIDRemote,
-      'name'       => IPS_GetName($InstanceIDRemote),
-      'type'       => 'Remote',
-      'zone'       => $RemoteName,
-      'location'   => stristr(IPS_GetLocation($InstanceIDRemote), IPS_GetName($InstanceIDRemote), true)
-      ];
-      unset($InstanceIDListRemotes[$InstanceIDRemote]);
-      } else {
-      $AddValue = [
-      'instanceID' => 0,
-      'name'       => $RemoteName,
-      'type'       => 'Remote',
-      'zone'       => $RemoteName,
-      'location'   => ''
-      ];
-      }
-      $AddValue['create'] = [
-      'moduleID'      => '{C7EA583D-2BAC-41B7-A85A-AD0DF648E514}',
-      'configuration' => ['Type' => $RemoteID]
-      ];
-      $RemoteValues[] = $AddValue;
-      }
-      foreach ($InstanceIDListRemotes as $InstanceIDRemote => $RemoteID) {
-      $RemoteName = \OnkyoAVR\Remotes::ToRemoteName($RemoteID);
-      $RemoteValues[] = [
-      'instanceID' => $InstanceIDRemote,
-      'name'       => IPS_GetName($InstanceIDRemote),
-      'type'       => 'Remote',
-      'zone'       => $RemoteName,
-      'location'   => stristr(IPS_GetLocation($InstanceIDRemote), IPS_GetName($InstanceIDRemote), true)
-      ];
-      }
-      $TunerValues = $this->GetTunerConfigFormValues($Splitter, $HasTuner);
-
-      return array_merge($RemoteValues, $TunerValues);
-      }
-
-      private function GetTunerConfigFormValues(int $Splitter, bool $HasTuner)
-      {
-      $InstanceIDListTuner = $this->GetInstanceList('{47D1BFF5-B6A6-4C3A-A11F-CDA656E3D85F}', $Splitter, 'Zone');
-      $this->SendDebug('IPS Tuner', $InstanceIDListTuner, 0);
-      $TunerValues = [];
-      foreach ($InstanceIDListTuner as $InstanceIDTuner => $ZoneID) {
-      $AddValue = [
-      'instanceID' => $InstanceIDTuner,
-      'name'       => IPS_GetName($InstanceIDTuner),
-      'type'       => 'Tuner',
-      'zone'       => '',
-      'location'   => stristr(IPS_GetLocation($InstanceIDTuner), IPS_GetName($InstanceIDTuner), true)
-      ];
-      if ($HasTuner) {
-      $AddValue['create'] = [
-      'moduleID'      => '{47D1BFF5-B6A6-4C3A-A11F-CDA656E3D85F}',
-      'configuration' => ['Zone' => $ZoneID]
-      ];
-      }
-      $TunerValues[] = $AddValue;
-      }
-      if ($HasTuner and ( count($TunerValues) == 0)) {
-      foreach ($this->Zones as $ZoneID => $Zone) {
-      $Create['Tuner ' . $Zone['Name']] = [
-      'moduleID'      => '{47D1BFF5-B6A6-4C3A-A11F-CDA656E3D85F}',
-      'configuration' => ['Zone' => $ZoneID]
-      ];
-      }
-      $TunerValues[] = [
-      'instanceID' => 0,
-      'name'       => 'Tuner',
-      'type'       => 'Tuner',
-      'zone'       => '',
-      'location'   => '',
-      'create'     => $Create
-      ];
-      }
-      return $TunerValues;
-      }
-
-      private function GetNetworkConfigFormValues(int $Splitter)
-      {
-      $APIDataNetServiceList = new \OnkyoAVR\ISCP_API_Data(\OnkyoAVR\ISCP_API_Commands::GetBuffer, \OnkyoAVR\ISCP_API_Commands::NetserviceList);
-      $FoundNetServiceList = $this->Send($APIDataNetServiceList);
-      $HasNetPlayer = false;
-      if (count($FoundNetServiceList) > 0) {
-      $HasNetPlayer = true;
-      }
-      $InstanceIDListNetPlayer = $this->GetInstanceList('{3E71DC11-1A93-46B1-9EA0-F0EC0C1B3476}', $Splitter, 'Zone');
-      $this->SendDebug('IPS NetPlayer', $InstanceIDListNetPlayer, 0);
-      $NetPlayerValues = [];
-      foreach ($InstanceIDListNetPlayer as $InstanceIDNetPlayer => $ZoneID) {
-      $AddValue = [
-      'instanceID' => $InstanceIDNetPlayer,
-      'name'       => IPS_GetName($InstanceIDNetPlayer),
-      'type'       => 'Netplayer',
-      'zone'       => '',
-      'location'   => stristr(IPS_GetLocation($InstanceIDNetPlayer), IPS_GetName($InstanceIDNetPlayer), true)
-      ];
-      if ($HasNetPlayer) {
-      $AddValue['create'] = [
-      'moduleID'      => '{3E71DC11-1A93-46B1-9EA0-F0EC0C1B3476}',
-      'configuration' => ['Zone' => $ZoneID]
-      ];
-      }
-      $NetPlayerValues[] = $AddValue;
-      }
-      if ($HasNetPlayer and ( count($NetPlayerValues) == 0)) {
-      foreach ($this->Zones as $ZoneID => $Zone) {
-      $Create['Netplayer ' . $Zone['Name']] = [
-      'moduleID'      => '{3E71DC11-1A93-46B1-9EA0-F0EC0C1B3476}',
-      'configuration' => ['Zone' => $ZoneID]
-      ];
-      }
-      $NetPlayerValues[] = [
-      'instanceID' => 0,
-      'name'       => 'Netplayer',
-      'type'       => 'Netplayer',
-      'zone'       => '',
-      'location'   => '',
-      'create'     => $Create
-      ];
-      }
-      return $NetPlayerValues;
-      }
-     */
     public function GetConfigurationForm()
     {
         $Form = json_decode(file_get_contents(__DIR__ . '/form.json'), true);
@@ -382,24 +282,27 @@ class KLF200Configurator extends IPSModule
             return json_encode($Form);
         }
         $NodeValues = $this->GetNodeConfigFormValues($Splitter);
-//        $RemoteValues = $this->GetRemoteConfigFormValues($Splitter);
-        //      $NetworkValues = $this->GetNetworkConfigFormValues($Splitter);
-        $Form['actions'][1]['values'] = $NodeValues; //array_merge($ZoneValues, $RemoteValues, $NetworkValues);
-        $Form['actions'][0]['items'][0]['items'][0]['onClick'] = <<<'EOT'
+        $Form['actions'][1]['values'] = $NodeValues;
+
+        if ((float) IPS_GetKernelVersion() < 5.3) {
+            array_shift($Form['actions']);
+        } else {
+            $Form['actions'][0]['items'][0]['items'][0]['onClick'] = <<<'EOT'
                 KLF200_DiscoveryNodes($id);
                 echo 
                 EOT . ' "' . $this->Translate('The view will reload after discovery is finished.') . '";';
 
-        $DeleteNodeValues = $this->GetDeleteNodeConfigFormValues();
-        $Form['actions'][0]['items'][0]['items'][1]['popup']['items'][1]['values'] = $DeleteNodeValues;
-        $Form['actions'][0]['items'][0]['items'][1]['popup']['items'][0]['onClick'] = <<<'EOT'
+            $DeleteNodeValues = $this->GetDeleteNodeConfigFormValues();
+            $Form['actions'][0]['items'][0]['items'][1]['popup']['items'][1]['values'] = $DeleteNodeValues;
+            $Form['actions'][0]['items'][0]['items'][1]['popup']['items'][0]['onClick'] = <<<'EOT'
                 KLF200_RemoveNodes($id,$RemoveNode['nodeid']);
                 echo 
                 EOT . ' "' . $this->Translate('The view will reload after remove is finished.') . '";';
-        $Form['actions'][0]['items'][0]['items'][2]['onClick'] = <<<'EOT'
+            $Form['actions'][0]['items'][0]['items'][2]['onClick'] = <<<'EOT'
                 KLF200_Reboot($id);
                 echo
                 EOT . ' "' . $this->Translate('The KLF200 will now reboot.') . '";';
+        }
         $this->SendDebug('FORM', json_encode($Form), 0);
         $this->SendDebug('FORM', json_last_error_msg(), 0);
         return json_encode($Form);
@@ -419,17 +322,17 @@ class KLF200Configurator extends IPSModule
             if (!$this->HasActiveParent()) {
                 throw new Exception($this->Translate('Instance has no active parent.'), E_USER_NOTICE);
             }
-            /** @var \KLF200\APIData $result */
-            $ret = $this->SendDataToParent($APIData->ToJSON('{7B0F87CC-0408-4283-8E0E-2D48141E42E8}'));
+            /** @var \KLF200\APIData $ResponseAPIData */
+            $ret = @$this->SendDataToParent($APIData->ToJSON('{7B0F87CC-0408-4283-8E0E-2D48141E42E8}'));
             $ResponseAPIData = @unserialize($ret);
             $this->SendDebug('Response', $ResponseAPIData, 1);
-            if ($ResponseAPIData->Command == \KLF200\APICommand::ERROR_NTF) {
-                return null;
-            }
+            /* if ($ResponseAPIData->isError()) {
+              return null;
+              } */
             return $ResponseAPIData;
         } catch (Exception $exc) {
             $this->SendDebug('Error', $exc->getMessage(), 0);
-            return null;
+            return new \KLF200\APIData(\KLF200\APICommand::ERROR_NTF, chr(\KLF200\ErrorNTF::TIMEOUT));
         }
     }
 

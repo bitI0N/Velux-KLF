@@ -769,10 +769,10 @@ class KLF200Node extends IPSModule
                 throw new Exception($this->Translate('Instance has no active parent.'), E_USER_NOTICE);
             }
             /** @var \KLF200\APIData $ResponseAPIData */
-            $ret = $this->SendDataToParent($APIData->ToJSON('{7B0F87CC-0408-4283-8E0E-2D48141E42E8}'));
+            $ret = @$this->SendDataToParent($APIData->ToJSON('{7B0F87CC-0408-4283-8E0E-2D48141E42E8}'));
             $ResponseAPIData = @unserialize($ret);
             $this->SendDebug('Response', $ResponseAPIData, 1);
-            if ($ResponseAPIData->Command == \KLF200\APICommand::ERROR_NTF) {
+            if ($ResponseAPIData->isError()) {
                 trigger_error($this->Translate($ResponseAPIData->ErrorToString()), E_USER_NOTICE);
                 return null;
             }

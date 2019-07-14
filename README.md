@@ -14,7 +14,7 @@ Implementierung des KLF200 in IPS.
   IPS-Modul:  
   [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)  
 
-  Librarys:  
+  Submodules:  
   **PHP-TLS**  
   https://github.com/rnaga/PHP-TLS  
     Copyright (c) 2016 Ryohei Nagatsuka    

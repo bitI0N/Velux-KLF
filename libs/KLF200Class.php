@@ -433,9 +433,9 @@ class APICommand
     const GET_SCENE_LIST_REQ = 0x040C; //Request a list of scenes.
     const GET_SCENE_LIST_CFM = 0x040D; //Acknowledge to GET_SCENE_LIST.
     const GET_SCENE_LIST_NTF = 0x040E; //Acknowledge to GET_SCENE_LIST.
-    const GET_SCENE_INFOAMATION_REQ = 0x040F; //Request extended information for one given scene.
-    const GET_SCENE_INFOAMATION_CFM = 0x0410; //Acknowledge to GET_SCENE_INFOAMATION_REQ.
-    const GET_SCENE_INFOAMATION_NTF = 0x0411; //Acknowledge to GET_SCENE_INFOAMATION_REQ.
+    const GET_SCENE_INFORMATION_REQ = 0x040F; //Request extended information for one given scene.
+    const GET_SCENE_INFORMATION_CFM = 0x0410; //Acknowledge to GET_SCENE_INFORMATION_REQ.
+    const GET_SCENE_INFORMATION_NTF = 0x0411; //Acknowledge to GET_SCENE_INFORMATION_REQ.
     const ACTIVATE_SCENE_REQ = 0x0412; //Request gateway to enter a scene.
     const ACTIVATE_SCENE_CFM = 0x0413; //Acknowledge to ACTIVATE_SCENE_REQ.
     const STOP_SCENE_REQ = 0x0415; //Request all nodes in a given scene to stop at their current position.
@@ -466,6 +466,7 @@ class APICommand
     const RTC_SET_TIME_ZONE_CFM = 0x2003; //Acknowledge to RTC_SET_TIME_ZONE_REQ.
     const GET_LOCAL_TIME_REQ = 0x2004; //Request the local time based on current time zone and daylight savings rules.
     const GET_LOCAL_TIME_CFM = 0x2005; //Acknowledge to RTC_SET_TIME_ZONE_REQ.
+    const IGNORE_1 = 0x2124;
     const PASSWORD_ENTER_REQ = 0x3000; //Enter password to authenticate request
     const PASSWORD_ENTER_CFM = 0x3001; //Acknowledge to PASSWORD_ENTER_REQ
     const PASSWORD_CHANGE_REQ = 0x3002; //Request password change.
@@ -502,12 +503,13 @@ class APICommand
         self::INITIALIZE_SCENE_NTF,
         self::RECORD_SCENE_NTF,
         self::GET_SCENE_LIST_NTF,
-        self::GET_SCENE_INFOAMATION_NTF,
+        self::GET_SCENE_INFORMATION_NTF,
         self::SCENE_INFORMATION_CHANGED_NTF,
         self::ACTIVATE_PRODUCTGROUP_NTF,
         self::ACTIVATION_LOG_UPDATED_NTF,
         self::GET_MULTIPLE_ACTIVATION_LOG_LINES_NTF,
-        self::PASSWORD_CHANGE_NTF
+        self::PASSWORD_CHANGE_NTF,
+        self::IGNORE_1
     ];
 
     public static function isEvent(int $APICommand)
@@ -746,12 +748,12 @@ class APICommand
                 return 'GET_SCENE_LIST_CFM';
             case self::GET_SCENE_LIST_NTF:
                 return 'GET_SCENE_LIST_NTF';
-            case self::GET_SCENE_INFOAMATION_REQ:
-                return 'GET_SCENE_INFOAMATION_REQ';
-            case self::GET_SCENE_INFOAMATION_CFM:
-                return 'GET_SCENE_INFOAMATION_CFM';
-            case self::GET_SCENE_INFOAMATION_NTF:
-                return 'GET_SCENE_INFOAMATION_NTF';
+            case self::GET_SCENE_INFORMATION_REQ:
+                return 'GET_SCENE_INFORMATION_REQ';
+            case self::GET_SCENE_INFORMATION_CFM:
+                return 'GET_SCENE_INFORMATION_CFM';
+            case self::GET_SCENE_INFORMATION_NTF:
+                return 'GET_SCENE_INFORMATION_NTF';
             case self::ACTIVATE_SCENE_REQ:
                 return 'ACTIVATE_SCENE_REQ';
             case self::ACTIVATE_SCENE_CFM:
@@ -822,6 +824,8 @@ class APICommand
                 return 'PASSWORD_CHANGE_CFM';
             case self::PASSWORD_CHANGE_NTF:
                 return 'PASSWORD_CHANGE_NTF';
+            case self::IGNORE_1:
+                return 'IGNORE_1';
         }
     }
 
