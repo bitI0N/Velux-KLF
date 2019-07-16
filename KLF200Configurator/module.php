@@ -12,7 +12,6 @@ eval('declare(strict_types=1);namespace KLF200Configurator {?>' . file_get_conte
  */
 class KLF200Configurator extends IPSModule
 {
-
     use \KLF200Configurator\Semaphore,
         \KLF200Configurator\BufferHelper,
         \KLF200Configurator\DebugHelper,
@@ -22,6 +21,7 @@ class KLF200Configurator extends IPSModule
 
         \KLF200Configurator\DebugHelper::SendDebug as SendDebug2;
     }
+
     /**
      * Interne Funktion des SDK.
      */
@@ -142,7 +142,6 @@ class KLF200Configurator extends IPSModule
                 $DeleteNodeValues = $this->GetDeleteNodeConfigFormValues();
                 $this->UpdateFormField('RemoveNode', 'values', json_encode($DeleteNodeValues));
 
-
                 break;
         }
     }
@@ -207,7 +206,7 @@ class KLF200Configurator extends IPSModule
 
     public function RemoveNodes(int $Node)
     {
-        if (($Node < 0) or ( $Node > 199)) {
+        if (($Node < 0) or ($Node > 199)) {
             trigger_error(sprintf($this->Translate('%s out of range.'), 'Node'), E_USER_NOTICE);
             return false;
         }
@@ -325,7 +324,6 @@ class KLF200Configurator extends IPSModule
         $NodeValues = $this->GetNodeConfigFormValues($Splitter);
         $Form['actions'][1]['values'] = $NodeValues;
 
-
         $Form['actions'][0]['items'][0]['items'][0]['onClick'] = <<<'EOT'
                 KLF200_DiscoveryNodes($id);
                 echo 
@@ -387,5 +385,4 @@ class KLF200Configurator extends IPSModule
             $this->SendDebug2($Message, $Data, $Format);
         }
     }
-
 }
