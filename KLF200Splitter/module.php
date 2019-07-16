@@ -399,26 +399,6 @@ namespace {
           //$this->unlock('SendAPIData');
           }
 
-          public function GetAllNodesInformation()
-          {
-          $APIData = new \KLF200\APIData(\KLF200\APICommand::GET_ALL_NODES_INFORMATION_REQ);
-          $ResultAPIData = $this->SendAPIData($APIData);
-          $State = ord($ResultAPIData->Data);
-          if ($State == 1) {
-          return [];
-          }
-          $this->WaitForNodes = ord($ResultAPIData->Data);
-          //$this->lock('SendAPIData');
-          for ($i = 0; $i < 2000; $i++) {
-          if ($this->WaitForNodes < 1) {
-          break;
-          }
-          usleep(1000);
-          }
-          //$this->unlock('SendAPIData');
-          return $this->Nodes;
-          }
-
           public function GetSceneList()
           {
           $APIData = new \KLF200\APIData(\KLF200\APICommand::GET_SCENE_LIST_REQ);
