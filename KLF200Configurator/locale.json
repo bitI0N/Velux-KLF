@@ -18,6 +18,8 @@
             "The KLF200 will now reboot.": "Das KLF200 wird jetzt neustarten.",
             "No error.": "Kein Fehler.",
             "Timeout.": "Zeitüberschreitung.",
+            "Waiting for finish remove.": "Warte auf entfernen.",
+            "Waiting for finish discovery.": "Warte auf Gerätesuche.",
             "Not further defined error.": "Nicht weiter definierter Fehler.",
             "Unknown command or command is not accepted at this state.": "Unbekanntes Kommando oder Kommando wird zu diesem Zeitpunkt nicht aktzeptiert.",
             "Error on Frame Structure.": "Fehler in Frame Struktur.",

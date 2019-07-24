@@ -9,19 +9,20 @@ eval('declare(strict_types=1);namespace KLF200Configurator {?>' . file_get_conte
 
 /**
  * @property array $Nodes
+ * @property bool $GetNodeInfoIsRunning
  */
 class KLF200Configurator extends IPSModule
 {
+
     use \KLF200Configurator\Semaphore,
         \KLF200Configurator\BufferHelper,
         \KLF200Configurator\DebugHelper,
-        \KLF200Splitter\InstanceStatus {
-        \KLF200Splitter\InstanceStatus::MessageSink as IOMessageSink;
-        \KLF200Splitter\InstanceStatus::RequestAction as IORequestAction;
+        \KLF200Configurator\InstanceStatus {
+        \KLF200Configurator\InstanceStatus::MessageSink as IOMessageSink;
+        \KLF200Configurator\InstanceStatus::RequestAction as IORequestAction;
 
         \KLF200Configurator\DebugHelper::SendDebug as SendDebug2;
     }
-
     /**
      * Interne Funktion des SDK.
      */
@@ -29,6 +30,8 @@ class KLF200Configurator extends IPSModule
     {
         parent::Create();
         $this->ConnectParent('{725D4DF6-C8FC-463C-823A-D3481A3D7003}');
+        $this->GetNodeInfoIsRunning = false;
+        $this->Nodes = [];
     }
 
     /**
@@ -96,6 +99,15 @@ class KLF200Configurator extends IPSModule
     {
         if ($State == IS_ACTIVE) {
             $this->GetAllNodesInformation();
+        } else {
+            $this->Nodes = [];
+            $NodeValues = [];
+            $Splitter = IPS_GetInstance($this->InstanceID)['ConnectionID'];
+            if ($Splitter > 0) {
+                $NodeValues = $this->GetNodeConfigFormValues($Splitter);
+            }
+            $this->UpdateFormField('Config', 'values', json_encode($NodeValues));
+            $this->UpdateFormField('RemoveNode', 'values', json_encode([]));
         }
     }
 
@@ -104,20 +116,31 @@ class KLF200Configurator extends IPSModule
         if ($this->IORequestAction($Ident, $Value)) {
             return true;
         }
+        if ($Ident == 'GetAllNodesInformation') {
+            return $this->GetAllNodesInformation();
+        }
         return false;
+    }
+
+    protected function UpdateFormField($Name, $Field, $Value)
+    {
+        $this->SendDebug('Form: ' . $Name . '.' . $Field, $Value, 0);
+        parent::UpdateFormField($Name, $Field, $Value);
     }
 
     private function ReceiveEvent(\KLF200\APIData $APIData)
     {
         switch ($APIData->Command) {
             case \KLF200\APICommand::CS_DISCOVER_NODES_NTF:
-                $Splitter = IPS_GetInstance($this->InstanceID)['ConnectionID'];
-                $NodeValues = $this->GetNodeConfigFormValues($Splitter);
-                $this->UpdateFormField('Config', 'values', json_encode($NodeValues));
+                if (!$this->GetNodeInfoIsRunning) {
+                    IPS_RunScriptText('IPS_RequestAction(' . $this->InstanceID . ',"GetAllNodesInformation",0);');
+                }
                 break;
             case \KLF200\APICommand::CS_SYSTEM_TABLE_UPDATE_NTF:
-                $DeleteNodeValues = $this->GetDeleteNodeConfigFormValues();
-                $this->UpdateFormField('RemoveNode', 'values', json_encode($DeleteNodeValues));
+                sleep(3);
+                if (!$this->GetNodeInfoIsRunning) {
+                    IPS_RunScriptText('IPS_RequestAction(' . $this->InstanceID . ',"GetAllNodesInformation",0);');
+                }
                 break;
             case \KLF200\APICommand::GET_ALL_NODES_INFORMATION_NTF:
                 $NodeID = ord($APIData->Data[0]);
@@ -139,9 +162,14 @@ class KLF200Configurator extends IPSModule
                 $Splitter = IPS_GetInstance($this->InstanceID)['ConnectionID'];
                 $NodeValues = $this->GetNodeConfigFormValues($Splitter);
                 $this->UpdateFormField('Config', 'values', json_encode($NodeValues));
+                $this->UpdateFormField('Config', 'visible', true);
+                $this->UpdateFormField('GatewayCommands', 'visible', true);
+                $this->UpdateFormField('ProgressLearn', 'visible', false);
                 $DeleteNodeValues = $this->GetDeleteNodeConfigFormValues();
                 $this->UpdateFormField('RemoveNode', 'values', json_encode($DeleteNodeValues));
-
+                $this->UpdateFormField('RemoveNode', 'visible', true);
+                $this->UpdateFormField('ProgressRemove', 'visible', false);
+                $this->GetNodeInfoIsRunning = false;
                 break;
         }
     }
@@ -167,19 +195,17 @@ class KLF200Configurator extends IPSModule
         $item1 = IPS_GetProperty($InstanceID, $ConfigParam);
     }
 
-    public function GetAllNodesInformation()
+    private function GetAllNodesInformation()
     {
         $this->Nodes = [];
+
         $APIData = new \KLF200\APIData(\KLF200\APICommand::GET_ALL_NODES_INFORMATION_REQ);
         $ResultAPIData = $this->SendAPIData($APIData);
         if ($ResultAPIData->isError()) {
-            return;
+            return false;
         }
-        $State = ord($ResultAPIData->Data[0]);
-        if ($State == 1) {
-            return;
-        }
-        return;
+        $this->GetNodeInfoIsRunning = true;
+        return ord($ResultAPIData->Data[0]) == 1;
     }
 
     public function DiscoveryNodes()
@@ -190,6 +216,9 @@ class KLF200Configurator extends IPSModule
             trigger_error($this->Translate($ResultAPIData->ErrorToString()), E_USER_NOTICE);
             return false;
         }
+        $this->UpdateFormField('GatewayCommands', 'visible', false);
+        $this->UpdateFormField('Config', 'visible', false);
+        $this->UpdateFormField('ProgressLearn', 'visible', true);
         return true;
     }
 
@@ -206,10 +235,12 @@ class KLF200Configurator extends IPSModule
 
     public function RemoveNodes(int $Node)
     {
-        if (($Node < 0) or ($Node > 199)) {
+        if (($Node < 0) or ( $Node > 199)) {
             trigger_error(sprintf($this->Translate('%s out of range.'), 'Node'), E_USER_NOTICE);
             return false;
         }
+        $this->UpdateFormField('ProgressRemove', 'visible', true);
+        $this->UpdateFormField('RemoveNode', 'visible', false);
         $Data = "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
         $Data[intdiv($Node, 8)] = chr(1 << ($Node % 8));
         $APIData = new \KLF200\APIData(\KLF200\APICommand::CS_REMOVE_NODES_REQ, $Data);
@@ -218,6 +249,9 @@ class KLF200Configurator extends IPSModule
             trigger_error($this->Translate($ResultAPIData->ErrorToString()), E_USER_NOTICE);
             return false;
         }
+        //PopupRemove
+        //$this->UpdateFormField('ProgressRemove', 'visible', false);
+        //$this->UpdateFormField('RemoveNode', 'visible', true);
         return true;
     }
 
@@ -273,6 +307,7 @@ class KLF200Configurator extends IPSModule
 
     private function GetDeleteNodeConfigFormValues()
     {
+        $NodeValues = [];
         foreach ($this->Nodes as $NodeID => $Node) {
             $AddValue = [
                 'nodeid' => $NodeID,
@@ -288,58 +323,42 @@ class KLF200Configurator extends IPSModule
     public function GetConfigurationForm()
     {
         $Form = json_decode(file_get_contents(__DIR__ . '/form.json'), true);
-
+        $NodeValues = [];
         if (!$this->HasActiveParent()) {
-            $Form['actions'][] = [
-                'type'  => 'PopupAlert',
-                'popup' => [
-                    'items' => [[
-                    'type'    => 'Label',
-                    'caption' => 'Instance has no active parent.'
-                        ]]
-                ]
-            ];
-            $this->SendDebug('FORM', json_encode($Form), 0);
-            $this->SendDebug('FORM', json_last_error_msg(), 0);
-
-            return json_encode($Form);
+            $Form['actions'][2]['visible'] = true;
+            $Form['actions'][2]['popup']['items'][0]['caption'] = 'Instance has no active parent.';
+        } else {
+            $Splitter = IPS_GetInstance($this->InstanceID)['ConnectionID'];
+            $IO = IPS_GetInstance($Splitter)['ConnectionID'];
+            if ($IO == 0) {
+                $Form['actions'][2]['visible'] = true;
+                $Form['actions'][2]['popup']['items'][0]['caption'] = 'Splitter has no IO instance.';
+            } else {
+                $NodeValues = $this->GetNodeConfigFormValues($Splitter);
+            }
         }
-        $Splitter = IPS_GetInstance($this->InstanceID)['ConnectionID'];
-        $IO = IPS_GetInstance($Splitter)['ConnectionID'];
-        if ($IO == 0) {
-            $Form['actions'][] = [
-                'type'  => 'PopupAlert',
-                'popup' => [
-                    'items' => [[
-                    'type'    => 'Label',
-                    'caption' => 'Splitter has no IO instance.'
-                        ]]
-                ]
-            ];
-            $this->SendDebug('FORM', json_encode($Form), 0);
-            $this->SendDebug('FORM', json_last_error_msg(), 0);
-
-            return json_encode($Form);
-        }
-        $NodeValues = $this->GetNodeConfigFormValues($Splitter);
         $Form['actions'][1]['values'] = $NodeValues;
 
-        $Form['actions'][0]['items'][0]['items'][0]['onClick'] = <<<'EOT'
-                KLF200_DiscoveryNodes($id);
-                echo 
-                EOT . ' "' . $this->Translate('The view will reload after discovery is finished.') . '";';
-
+        /*       $Form['actions'][0]['items'][0]['items'][0]['onClick'] = <<<'EOT'
+          if(KLF200_DiscoveryNodes($id)){
+          echo
+          EOT . ' "' . $this->Translate('The view will reload after discovery is finished.') . '";}';
+         */
         $DeleteNodeValues = $this->GetDeleteNodeConfigFormValues();
         $Form['actions'][0]['items'][0]['items'][1]['popup']['items'][1]['values'] = $DeleteNodeValues;
         $Form['actions'][0]['items'][0]['items'][1]['popup']['items'][0]['onClick'] = <<<'EOT'
-                KLF200_RemoveNodes($id,$RemoveNode['nodeid']);
-                echo 
-                EOT . ' "' . $this->Translate('The view will reload after remove is finished.') . '";';
-        $Form['actions'][0]['items'][0]['items'][2]['onClick'] = <<<'EOT'
-                KLF200_Reboot($id);
-                echo
-                EOT . ' "' . $this->Translate('The KLF200 will now reboot.') . '";';
+                if (is_int($RemoveNode['nodeid'])){
+                    KLF200_RemoveNodes($id,$RemoveNode['nodeid']);
+                } else {
+                EOT . ' echo "' . $this->Translate('Nothing selected.') . '";}';
 
+        /*                if(KLF200_RemoveNodes($id,$RemoveNode['nodeid'])){
+          echo
+          EOT . ' "' . $this->Translate('The view will reload after remove is finished.') . '";}'; */
+        $Form['actions'][0]['items'][0]['items'][2]['onClick'] = <<<'EOT'
+                if(KLF200_RebootGateway($id)){
+                echo
+                EOT . ' "' . $this->Translate('The KLF200 will now reboot.') . '";}';
         $this->SendDebug('FORM', json_encode($Form), 0);
         $this->SendDebug('FORM', json_last_error_msg(), 0);
         return json_encode($Form);
@@ -348,13 +367,13 @@ class KLF200Configurator extends IPSModule
     public function ReceiveData($JSONString)
     {
         $APIData = new \KLF200\APIData($JSONString);
-        $this->SendDebug('Event', $APIData, 0);
+        $this->SendDebug('Event', $APIData, 1);
         $this->ReceiveEvent($APIData);
     }
 
     private function SendAPIData(\KLF200\APIData $APIData)
     {
-        $this->SendDebug('ForwardData', $APIData, 0);
+        $this->SendDebug('ForwardData', $APIData, 1);
 
         try {
             if (!$this->HasActiveParent()) {
@@ -385,4 +404,5 @@ class KLF200Configurator extends IPSModule
             $this->SendDebug2($Message, $Data, $Format);
         }
     }
+
 }

@@ -6,11 +6,12 @@
             "items": [
                 { 
                     "type": "RowLayout",
+                    "name": "GatewayCommands",
                     "items": [
                         {
                             "type": "Button",
                             "label": "Discover device",
-                            "onClick": ""
+                            "onClick": "KLF200_DiscoveryNodes($id);"
                         }, 
                         {
                             "type": "PopupButton",
@@ -50,7 +51,15 @@
                                             }
                                         ],
                                         "values": []
-                                    }
+                                    },
+                                      {
+                            "type": "ProgressBar",
+                            "name": "ProgressRemove",
+                            "current": 100,
+                            "indeterminate": true,
+                            "visible": false,
+                            "caption": "Waiting for finish remove."
+                        }
                                 ]
                             }
                         },
@@ -58,6 +67,20 @@
                             "type": "Button",
                             "label": "Reboot Gateway",
                             "onClick": ""
+                        }
+                    ]
+                },
+                { 
+                    "type": "RowLayout",
+                    "name": "GatewayProgress",
+                    "items": [
+                        {
+                            "type": "ProgressBar",
+                            "name": "ProgressLearn",
+                            "current": 100,
+                            "indeterminate": true,
+                            "visible": false,
+                            "caption": "Waiting for finish discovery."
                         }
                     ]
                 }
@@ -94,6 +117,20 @@
                 }
             ],
             "values": []
+        },
+        {
+            "type": "PopupAlert",
+            "name": "AlertPopup",
+            "visible": false,
+            "popup": {
+                "items": [
+                    {
+                        "name": "AlertText",
+                        "type": "Label",
+                        "caption": ""
+                    }
+                ]
+            }
         }
     ]
 }

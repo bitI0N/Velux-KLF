@@ -39,6 +39,7 @@ namespace {
             require_once $file;
             restore_include_path();
         }
+
     }
 
 }
@@ -72,6 +73,7 @@ namespace KLF200Splitter {
                     return 'init';
             }
         }
+
     }
 
     //require_once __DIR__ . '/../libs/loadTLS.php';
@@ -118,6 +120,7 @@ namespace {
      */
     class KLF200Splitter extends IPSModule
     {
+
         use \KLF200Splitter\Semaphore,
             \KLF200Splitter\BufferHelper,
             \KLF200Splitter\DebugHelper,
@@ -128,7 +131,6 @@ namespace {
             \KLF200Splitter\InstanceStatus::RequestAction as IORequestAction;
             \KLF200Splitter\DebugHelper::SendDebug as SendDebug2;
         }
-
         /**
          * Interne Funktion des SDK.
          */
@@ -329,7 +331,7 @@ namespace {
                 return false;
             }
             $this->SetValueInteger('CommandVersion', ord($ResultAPIData->Data[0]));
-            $this->SetValueString('SoftwareVersion', ord($ResultAPIData->Data[1]) .
+            $this->SetValueString('SoftwareVersion', ord($ResultAPIData->Data[1]) . '.' .
                     ord($ResultAPIData->Data[2]) . '.' .
                     ord($ResultAPIData->Data[3]) . '.' .
                     ord($ResultAPIData->Data[4]) .
@@ -483,7 +485,6 @@ namespace {
         }
 
         //################# DATAPOINTS CHILDS
-
         /**
          * Interne Funktion des SDK. Nimmt Daten von Childs entgegen und sendet Diese weiter.
          *
@@ -511,7 +512,6 @@ namespace {
         }
 
         //################# DATAPOINTS PARENT
-
         /**
          * Empfängt Daten vom Parent.
          *
@@ -543,7 +543,8 @@ namespace {
                                 $this->DecodeSLIPData($SLIPData);
                             } catch (\PTLS\Exceptions\TLSAlertException $e) {
                                 $this->SendDebug('Error', $e->getMessage(), 0);
-                                if (strlen($out = $e->decode())) {
+                                $out = $e->decode();
+                                if (($out !== NULL) and ( strlen($out) > 0)) {
                                     $JSON['DataID'] = '{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}';
                                     $JSON['Buffer'] = utf8_encode($out);
                                     $JsonString = json_encode($JSON);
@@ -672,7 +673,8 @@ namespace {
                     }
                 } catch (\PTLS\Exceptions\TLSAlertException $e) {
                     $this->SendDebug('Error', $e->getMessage(), 1);
-                    if (strlen($out = $e->decode())) {
+                    $out = $e->decode();
+                    if (($out !== NULL) and ( strlen($out) > 0)) {
                         $JSON['DataID'] = '{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}';
                         $JSON['Buffer'] = utf8_encode($out);
                         $JsonString = json_encode($JSON);
@@ -685,7 +687,7 @@ namespace {
                 }
 
                 $SendData = $TLS->decode();
-                if (strlen($SendData) > 0) {
+                if (($SendData !== NULL) and ( strlen($SendData) > 0)) {
                     $this->SendDebug('TLS loop ' . $loop, $SendData, 0);
                     $JSON['DataID'] = '{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}';
                     $JSON['Buffer'] = utf8_encode($SendData);
@@ -831,6 +833,7 @@ namespace {
             $this->Multi_TLS = $TLS;
             $this->unlock('TLS');
         }
+
     }
 
 }

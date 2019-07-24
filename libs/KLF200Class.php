@@ -83,6 +83,7 @@ class APIData
     {
         return \KLF200\ErrorNTF::ToString($this->LastError);
     }
+
 }
 
 class ErrorNTF
@@ -117,6 +118,7 @@ class ErrorNTF
                 return 'Not authenticated.';
         }
     }
+
 }
 
 class State
@@ -150,6 +152,7 @@ class State
                 return 'unknow state value: 0x' . sprintf('%02X', $State);
         }
     }
+
 }
 
 class RunStatus
@@ -169,6 +172,7 @@ class RunStatus
                 return 'Execution is still active.';
         }
     }
+
 }
 
 class StatusReply
@@ -311,6 +315,7 @@ class StatusReply
                 return 'the parameter was limited by an emergency';
         }
     }
+
 }
 
 class APICommand
@@ -462,7 +467,11 @@ class APICommand
     const RTC_SET_TIME_ZONE_CFM = 0x2003; //Acknowledge to RTC_SET_TIME_ZONE_REQ.
     const GET_LOCAL_TIME_REQ = 0x2004; //Request the local time based on current time zone and daylight savings rules.
     const GET_LOCAL_TIME_CFM = 0x2005; //Acknowledge to RTC_SET_TIME_ZONE_REQ.
-    const IGNORE_1 = 0x2124;
+    const IGNORE_2120 = 0x2120;
+    const IGNORE_2121 = 0x2121;
+    const IGNORE_2122 = 0x2122;
+    const IGNORE_2123 = 0x2123;
+    const IGNORE_2124 = 0x2124;
     const PASSWORD_ENTER_REQ = 0x3000; //Enter password to authenticate request
     const PASSWORD_ENTER_CFM = 0x3001; //Acknowledge to PASSWORD_ENTER_REQ
     const PASSWORD_CHANGE_REQ = 0x3002; //Request password change.
@@ -505,7 +514,11 @@ class APICommand
         self::ACTIVATION_LOG_UPDATED_NTF,
         self::GET_MULTIPLE_ACTIVATION_LOG_LINES_NTF,
         self::PASSWORD_CHANGE_NTF,
-        self::IGNORE_1
+        self::IGNORE_2120,
+        self::IGNORE_2121,
+        self::IGNORE_2122,
+        self::IGNORE_2123,
+        self::IGNORE_2124
     ];
 
     public static function isEvent(int $APICommand)
@@ -820,10 +833,19 @@ class APICommand
                 return 'PASSWORD_CHANGE_CFM';
             case self::PASSWORD_CHANGE_NTF:
                 return 'PASSWORD_CHANGE_NTF';
-            case self::IGNORE_1:
-                return 'IGNORE_1';
+            case self::IGNORE_2120:
+                return 'IGNORE_2120';
+            case self::IGNORE_2121:
+                return 'IGNORE_2121';
+            case self::IGNORE_2122:
+                return 'IGNORE_2122';
+            case self::IGNORE_2123:
+                return 'IGNORE_2123';
+            case self::IGNORE_2124:
+                return 'IGNORE_2124';
         }
     }
+
 }
 
 class Node
@@ -865,6 +887,7 @@ class Node
         0x0600 => 'Swinging Shutters',
         0x0601 => 'Swinging Shutter with independent handling of the leaves'
     ];
+
 }
 
 /* @} */
