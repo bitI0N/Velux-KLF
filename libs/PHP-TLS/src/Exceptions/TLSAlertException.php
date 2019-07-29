@@ -1,21 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace PTLS\Exceptions;
 
-use PTLS\Core;
 use PTLS\Content\Alert;
 use PTLS\ContentType;
+use PTLS\Core;
 
 class TLSAlertException extends \Exception
 {
     private $alert;
     private $output;
 
-    function __construct(Alert $alert, string $message)
+    public function __construct(Alert $alert, string $message)
     {
         $this->output = null;
         $this->alert = $alert;
-        $message = $this->alert->toString() . " " . $message;
+        $message = $this->alert->toString() . ' ' . $message;
         parent::__construct($message, $alert->getDescCode());
     }
 
@@ -23,14 +25,16 @@ class TLSAlertException extends \Exception
     {
         $alert = $this->alert;
 
-        if( $alert->fromPeer() ) return;
+        if ($alert->fromPeer()) {
+            return;
+        }
 
         $recordOut = $core->getOutDuplex()->getRecord();
 
         $payload = $alert->decode();
 
         $this->output = $recordOut->set('contentType', ContentType::ALERT)
-                         ->set('payload', $payload )
+                         ->set('payload', $payload)
                          ->decode();
     }
 
@@ -39,5 +43,3 @@ class TLSAlertException extends \Exception
         return $this->output;
     }
 }
-
-

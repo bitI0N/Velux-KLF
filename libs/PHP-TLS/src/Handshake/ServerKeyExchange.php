@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace PTLS\Handshake;
 
 use PTLS\Core;
 
 class ServerKeyExchange extends HandshakeAbstract
 {
-    function __construct(Core $core)
+    public function __construct(Core $core)
     {
         parent::__construct($core);
     }
@@ -18,8 +20,7 @@ class ServerKeyExchange extends HandshakeAbstract
 
         $this->encodeHeader($data);
 
-        if( $core->cipherSuite->isECDHEEnabled() )
-        {
+        if ($core->cipherSuite->isECDHEEnabled()) {
             $extensions->call('Curve', 'encodeServerKeyExchange', null, $data);
         }
     }
@@ -32,7 +33,6 @@ class ServerKeyExchange extends HandshakeAbstract
     public function debugInfo()
     {
         return "[HandshakeType::ServerKeyExchange]\n"
-             . "Lengh: " . $this->length . "\n";
+             . 'Lengh: ' . $this->length . "\n";
     }
 }
-

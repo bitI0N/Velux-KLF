@@ -1,59 +1,49 @@
 <?php
 
+declare(strict_types=1);
+
 namespace PTLS;
 
-use PTLS\TLS;
-use PTLS\Exceptions\TLSAlertException;
 use PTLS\Content\Alert;
+use PTLS\Exceptions\TLSAlertException;
 
 class CipherSuites
 {
     const TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256 = 0xc02b;
     const TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 = 0xC02F;
     const TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 = 0xC030;
-    const TLS_RSA_WITH_AES_128_GCM_SHA256    = 0x009C;
-    const TLS_RSA_WITH_AES_256_GCM_SHA384    = 0x009D;
-    const TLS_RSA_WITH_AES_128_CBC_SHA       = 0x002F;
-    const TLS_RSA_WITH_AES_256_CBC_SHA       = 0x0035;
-    const TLS_RSA_WITH_AES_128_CBC_SHA256    = 0x003C;
-    const TLS_RSA_WITH_AES_256_CBC_SHA256    = 0x003D; 
+    const TLS_RSA_WITH_AES_128_GCM_SHA256 = 0x009C;
+    const TLS_RSA_WITH_AES_256_GCM_SHA384 = 0x009D;
+    const TLS_RSA_WITH_AES_128_CBC_SHA = 0x002F;
+    const TLS_RSA_WITH_AES_256_CBC_SHA = 0x0035;
+    const TLS_RSA_WITH_AES_128_CBC_SHA256 = 0x003C;
+    const TLS_RSA_WITH_AES_256_CBC_SHA256 = 0x003D;
     const TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA = 0xC013;
-    const TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA = 0xC014;    
+    const TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA = 0xC014;
 
     private static $cipherList = [
 
-        self::TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256 =>
-        ['cipher_type' => self::CIPHER_TYPE_AEAD, 'crypto_method' => 'AES-128-GCM', 'mac_len' => 0, 'iv_len' => 4, 'key_len' => 16, 'mac' => 'sha256'],
+        self::TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256 => ['cipher_type' => self::CIPHER_TYPE_AEAD, 'crypto_method' => 'AES-128-GCM', 'mac_len' => 0, 'iv_len' => 4, 'key_len' => 16, 'mac' => 'sha256'],
 
-        self::TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 =>
-        ['cipher_type' => self::CIPHER_TYPE_AEAD, 'crypto_method' => 'AES-128-GCM', 'mac_len' => 0, 'iv_len' => 4, 'key_len' => 16, 'mac' => 'sha256'],
+        self::TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 => ['cipher_type' => self::CIPHER_TYPE_AEAD, 'crypto_method' => 'AES-128-GCM', 'mac_len' => 0, 'iv_len' => 4, 'key_len' => 16, 'mac' => 'sha256'],
 
-        self::TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 =>
-        ['cipher_type' => self::CIPHER_TYPE_AEAD, 'crypto_method' => 'AES-256-GCM', 'mac_len' => 0, 'iv_len' => 4, 'key_len' => 32, 'mac' => 'sha384'],
+        self::TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 => ['cipher_type' => self::CIPHER_TYPE_AEAD, 'crypto_method' => 'AES-256-GCM', 'mac_len' => 0, 'iv_len' => 4, 'key_len' => 32, 'mac' => 'sha384'],
 
-        self::TLS_RSA_WITH_AES_128_GCM_SHA256 =>
-        ['cipher_type' => self::CIPHER_TYPE_AEAD, 'crypto_method' => 'AES-128-GCM', 'mac_len' => 0, 'iv_len' => 4, 'key_len' => 16, 'mac' => 'sha256'],
+        self::TLS_RSA_WITH_AES_128_GCM_SHA256 => ['cipher_type' => self::CIPHER_TYPE_AEAD, 'crypto_method' => 'AES-128-GCM', 'mac_len' => 0, 'iv_len' => 4, 'key_len' => 16, 'mac' => 'sha256'],
 
-        self::TLS_RSA_WITH_AES_256_GCM_SHA384 =>
-        ['cipher_type' => self::CIPHER_TYPE_AEAD, 'crypto_method' => 'AES-256-GCM', 'mac_len' => 0, 'iv_len' => 4, 'key_len' => 32, 'mac' => 'sha384'],
+        self::TLS_RSA_WITH_AES_256_GCM_SHA384 => ['cipher_type' => self::CIPHER_TYPE_AEAD, 'crypto_method' => 'AES-256-GCM', 'mac_len' => 0, 'iv_len' => 4, 'key_len' => 32, 'mac' => 'sha384'],
 
-        self::TLS_RSA_WITH_AES_256_CBC_SHA =>
-        ['cipher_type' => self::CIPHER_TYPE_BLOCK, 'crypto_method' => 'AES-256-CBC', 'mac_len' => 20, 'iv_len' => 16, 'key_len' => 32, 'mac' => 'sha1'],
+        self::TLS_RSA_WITH_AES_256_CBC_SHA => ['cipher_type' => self::CIPHER_TYPE_BLOCK, 'crypto_method' => 'AES-256-CBC', 'mac_len' => 20, 'iv_len' => 16, 'key_len' => 32, 'mac' => 'sha1'],
 
-        self::TLS_RSA_WITH_AES_128_CBC_SHA => 
-        ['cipher_type' => self::CIPHER_TYPE_BLOCK, 'crypto_method' => 'AES-128-CBC', 'mac_len' => 20, 'iv_len' => 16, 'key_len' => 16, 'mac' => 'sha1'],
+        self::TLS_RSA_WITH_AES_128_CBC_SHA => ['cipher_type' => self::CIPHER_TYPE_BLOCK, 'crypto_method' => 'AES-128-CBC', 'mac_len' => 20, 'iv_len' => 16, 'key_len' => 16, 'mac' => 'sha1'],
 
-        self::TLS_RSA_WITH_AES_128_CBC_SHA256 =>
-        ['cipher_type' => self::CIPHER_TYPE_BLOCK, 'crypto_method' => 'AES-128-CBC', 'mac_len' => 32, 'iv_len' => 16, 'key_len' => 16, 'mac' => 'sha256'],
- 
-        self::TLS_RSA_WITH_AES_256_CBC_SHA256 =>
-        ['cipher_type' => self::CIPHER_TYPE_BLOCK, 'crypto_method' => 'AES-256-CBC', 'mac_len' => 32, 'iv_len' => 16, 'key_len' => 32, 'mac' => 'sha256'],
+        self::TLS_RSA_WITH_AES_128_CBC_SHA256 => ['cipher_type' => self::CIPHER_TYPE_BLOCK, 'crypto_method' => 'AES-128-CBC', 'mac_len' => 32, 'iv_len' => 16, 'key_len' => 16, 'mac' => 'sha256'],
 
-        self::TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA =>
-        ['cipher_type' => self::CIPHER_TYPE_BLOCK, 'crypto_method' => 'AES-128-CBC', 'mac_len' => 20, 'iv_len' => 16, 'key_len' => 16, 'mac' => 'sha1'],
+        self::TLS_RSA_WITH_AES_256_CBC_SHA256 => ['cipher_type' => self::CIPHER_TYPE_BLOCK, 'crypto_method' => 'AES-256-CBC', 'mac_len' => 32, 'iv_len' => 16, 'key_len' => 32, 'mac' => 'sha256'],
 
-        self::TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA =>
-        ['cipher_type' => self::CIPHER_TYPE_BLOCK, 'crypto_method' => 'AES-256-CBC', 'mac_len' => 20, 'iv_len' => 16, 'key_len' => 32, 'mac' => 'sha1'],
+        self::TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA => ['cipher_type' => self::CIPHER_TYPE_BLOCK, 'crypto_method' => 'AES-128-CBC', 'mac_len' => 20, 'iv_len' => 16, 'key_len' => 16, 'mac' => 'sha1'],
+
+        self::TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA => ['cipher_type' => self::CIPHER_TYPE_BLOCK, 'crypto_method' => 'AES-256-CBC', 'mac_len' => 20, 'iv_len' => 16, 'key_len' => 32, 'mac' => 'sha1'],
     ];
 
     public static $enabledCipherSuites = [
@@ -71,11 +61,11 @@ class CipherSuites
     ];
 
     const CIPHER_TYPE_STREAM = 1;
-    const CIPHER_TYPE_BLOCK  = 2;
-    const CIPHER_TYPE_AEAD   = 3;
+    const CIPHER_TYPE_BLOCK = 2;
+    const CIPHER_TYPE_AEAD = 3;
 
     // Authentication algorithm
-    const AU_TYPE_RSA   = 1;
+    const AU_TYPE_RSA = 1;
     const AU_TYPE_ECDSA = 2;
 
     private $macLen;
@@ -90,17 +80,17 @@ class CipherSuites
     {
         $cipherID = $arr[0] << 8 | $arr[1];
 
-        if( !array_key_exists($cipherID, self::$cipherList) )
+        if (!array_key_exists($cipherID, self::$cipherList)) {
             throw new TLSAlertException(Alert::create(Alert::INTERNAL_ERROR), "Failed to initiate CipherSuite. cipherID: $cipherID");
-
+        }
         $cipherSuite = self::$cipherList[$cipherID];
 
-        $this->cipherID  = $cipherID;
+        $this->cipherID = $cipherID;
 
-        $this->cipherType   = $cipherSuite['cipher_type'];
-        $this->ivLen        = $cipherSuite['iv_len'];
-        $this->keyLen       = $cipherSuite['key_len'];
-        $this->macLen       = $cipherSuite['mac_len'];
+        $this->cipherType = $cipherSuite['cipher_type'];
+        $this->ivLen = $cipherSuite['iv_len'];
+        $this->keyLen = $cipherSuite['key_len'];
+        $this->macLen = $cipherSuite['mac_len'];
         $this->cryptoMethod = $cipherSuite['crypto_method'];
         $this->macAlgorithm = $cipherSuite['mac'];
     }
@@ -112,8 +102,7 @@ class CipherSuites
 
     public static function isGCM($cipherID)
     {
-        switch($cipherID)
-        {
+        switch ($cipherID) {
             case self::TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256:
             case self::TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256:
             case self::TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384:
@@ -127,8 +116,7 @@ class CipherSuites
 
     public static function isECDHE($cipherID)
     {
-        switch($cipherID)
-        {
+        switch ($cipherID) {
             case self::TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256:
             case self::TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256:
             case self::TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384:
@@ -142,8 +130,7 @@ class CipherSuites
 
     public static function isECDSA($cipherID)
     {
-        switch($cipherID)
-        {
+        switch ($cipherID) {
             case self::TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256:
                 return true;
         }
@@ -152,16 +139,15 @@ class CipherSuites
     }
 
     /**
-     *  Called by the server
+     *  Called by the server.
      */
     public static function pickCipherID(Core $core, array $arr)
     {
         $extensions = $core->extensions;
 
         $servAUType = $core->getConfig('is_ecdsa') ? self::AU_TYPE_ECDSA : self::AU_TYPE_RSA;
-       
-        foreach( $arr as $val)
-        {
+
+        foreach ($arr as $val) {
             list($cipher1, $cipher2) = $val;
 
             $cipherID = $cipher1 << 8 | $cipher2;
@@ -169,18 +155,19 @@ class CipherSuites
             $auType = self::isECDSA($cipherID) ? self::AU_TYPE_ECDSA : self::AU_TYPE_RSA;
 
             // Check for Authentication algorithm
-            if( $servAUType !== $auType )
+            if ($servAUType !== $auType) {
                 continue;
-
-            if( in_array($cipherID, self::$enabledCipherSuites ) )
-            {
-                // Check for ECDHE
-                if( self::isECDHE($cipherID) && true !== $extensions->call('Curve', 'isEnabled', false) )
-                    continue;
-                else 
-                    return [$cipher1, $cipher2];
             }
-        } 
+
+            if (in_array($cipherID, self::$enabledCipherSuites)) {
+                // Check for ECDHE
+                if (self::isECDHE($cipherID) && true !== $extensions->call('Curve', 'isEnabled', false)) {
+                    continue;
+                } else {
+                    return [$cipher1, $cipher2];
+                }
+            }
+        }
 
         return null;
     }
@@ -189,8 +176,7 @@ class CipherSuites
     {
         $data = '';
 
-        foreach(self::$enabledCipherSuites as $val)
-        {
+        foreach (self::$enabledCipherSuites as $val) {
             $data .= Core::_pack('C', $val >> 8) . Core::_pack('C', $val & 0x00ff);
         }
 
@@ -199,8 +185,9 @@ class CipherSuites
 
     private function getProperty($property)
     {
-        if( !property_exists($this, $property) )
+        if (!property_exists($this, $property)) {
             return;
+        }
 
         return $this->$property;
     }
@@ -212,8 +199,7 @@ class CipherSuites
     }
 
     /**
-     * 
-     * https://tools.ietf.org/html/rfc5288 Page 2
+     * https://tools.ietf.org/html/rfc5288 Page 2.
      *
      * The Pseudo Random Function (PRF) algorithms SHALL be as follows:
      *
@@ -222,13 +208,14 @@ class CipherSuites
      *
      *  For cipher suites ending with _SHA384, the PRF is the TLS PRF
      * [RFC5246] with SHA-384 as the hash function.
-     * 
+     *
      * This is also used by Finished message in Handshake
      */
     public function getHashAlogV33()
     {
-        if( self::isGCM($this->cipherID) )
+        if (self::isGCM($this->cipherID)) {
             return $this->macAlgorithm;
+        }
 
         return 'sha256';
     }
@@ -255,7 +242,7 @@ class CipherSuites
 
     public function blockDecrypt($encPayload, $sharedKey, $IV)
     {
-        $data = openssl_decrypt($encPayload, $this->cryptoMethod, $sharedKey, OPENSSL_ZERO_PADDING|OPENSSL_RAW_DATA, $IV);
+        $data = openssl_decrypt($encPayload, $this->cryptoMethod, $sharedKey, OPENSSL_ZERO_PADDING | OPENSSL_RAW_DATA, $IV);
         return $data;
     }
 
@@ -267,7 +254,7 @@ class CipherSuites
 
     public function hashHmac($data, $secretMac, $binary = true)
     {
-        return hash_hmac($this->macAlgorithm, $data, $secretMac, $binary );
+        return hash_hmac($this->macAlgorithm, $data, $secretMac, $binary);
     }
 
     public function gcmEncrypt($payload, $sharedKey, $nonce, $aad)
@@ -295,8 +282,4 @@ class CipherSuites
 
         return $r;
     }
-
 }
-
-
-

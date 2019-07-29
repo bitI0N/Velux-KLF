@@ -1,17 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace PTLS\Handshake;
 
 use PTLS\Core;
 
 class ServerHelloDone extends HandshakeAbstract
 {
-    function __construct(Core $core)
+    public function __construct(Core $core)
     {
         parent::__construct($core);
     }
 
-    public function encode($data){}
+    public function encode($data)
+    {
+    }
 
     public function decode()
     {
@@ -26,4 +30,3 @@ class ServerHelloDone extends HandshakeAbstract
         return "[HandshakeType::ServerHelloDone]\n";
     }
 }
-

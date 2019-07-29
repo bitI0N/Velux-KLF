@@ -1,12 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace PTLS\Record;
 
-use PTLS\Core;
-use PTLS\ContentType;
 use PTLS\ConnectionDuplex;
-use PTLS\Exceptions\TLSAlertException;
-use PTLS\Content\Alert;
+use PTLS\Core;
 
 abstract class CipherRecordAbstract extends Record
 {
@@ -27,8 +26,7 @@ abstract class CipherRecordAbstract extends Record
      */
     public function get($property, $default = null)
     {
-        if( $property == 'length' )
-        {
+        if ($property == 'length') {
             return 5 + $this->encLength;
         }
 
@@ -37,39 +35,36 @@ abstract class CipherRecordAbstract extends Record
 
     protected function getSeq()
     {
-        if( is_null( $this->seq ) )
-        {
+        if (is_null($this->seq)) {
             $this->seq = self::getZeroSeq();
         }
 
-        return implode('', $this->seq );
+        return implode('', $this->seq);
     }
 
     protected function incrementSeq()
     {
-        if( is_null( $this->seq ) )
-        {
+        if (is_null($this->seq)) {
             $this->seq = $this->getZeroSeq();
         }
 
-        for( $i = 7; $i >= 0; $i--)
-        {
+        for ($i = 7; $i >= 0; $i--) {
             $num = Core::_unpack('C', $this->seq[$i]) + 1;
-            $this->seq[$i] = Core::_pack('C', $num );
+            $this->seq[$i] = Core::_pack('C', $num);
 
-            if( $num%256 > 0 ) break;
+            if ($num % 256 > 0) {
+                break;
+            }
         }
     }
 
     protected static function getZeroSeq()
     {
         $seq = [];
-        for($i = 0; $i < 8; $i++)
+        for ($i = 0; $i < 8; $i++) {
             $seq[$i] = Core::_pack('C', 0);
+        }
 
         return $seq;
     }
-
 }
-
-
