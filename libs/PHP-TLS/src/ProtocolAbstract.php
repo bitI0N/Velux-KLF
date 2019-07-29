@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace PTLS;
 
 abstract class ProtocolAbstract implements DataConverterInterface
@@ -10,18 +12,19 @@ abstract class ProtocolAbstract implements DataConverterInterface
     abstract public function debugInfo();
 
     /**
-     * Get properties
+     * Get properties.
      */
     public function get($property, $default = null)
     {
-        if( property_exists($this, $property) )
+        if (property_exists($this, $property)) {
             return $this->$property;
+        }
 
         return $default;
     }
 
     /**
-     * Set properties
+     * Set properties.
      */
     public function set($property, $value)
     {
@@ -29,4 +32,3 @@ abstract class ProtocolAbstract implements DataConverterInterface
         return $this;
     }
 }
-

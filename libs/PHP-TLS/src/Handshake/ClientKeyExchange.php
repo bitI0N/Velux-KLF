@@ -1,15 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace PTLS\Handshake;
 
-use PTLS\Core;
-use PTLS\X509;
-use PTLS\Exceptions\TLSAlertException;
 use PTLS\Content\Alert;
+use PTLS\Core;
+use PTLS\Exceptions\TLSAlertException;
+use PTLS\X509;
 
 class ClientKeyExchange extends HandshakeAbstract
 {
-    function __construct(Core $core)
+    public function __construct(Core $core)
     {
         parent::__construct($core);
     }
@@ -25,7 +27,7 @@ class ClientKeyExchange extends HandshakeAbstract
         $serverRandom = $connServer->random;
 
         $masterSecret = $prf->getMaster($preMaster, $clientRandom, $serverRandom);
-        $secretKeys   = $prf->getKeys($masterSecret, $clientRandom, $serverRandom);
+        $secretKeys = $prf->getKeys($masterSecret, $clientRandom, $serverRandom);
 
         $core->setMasterSecret($masterSecret);
 
@@ -40,7 +42,7 @@ class ClientKeyExchange extends HandshakeAbstract
         $extensions = $core->extensions;
 
         // Client
-        $connIn  = $core->getInDuplex();
+        $connIn = $core->getInDuplex();
 
         // Server
         $connOut = $core->getOutDuplex();
@@ -48,33 +50,32 @@ class ClientKeyExchange extends HandshakeAbstract
         $data = $this->encodeHeader($data);
 
         // ECDHE
-        if( $core->cipherSuite->isECDHEEnabled() )
-        {
-            $publicKeyLen = Core::_unpack( 'C', $data[0] );
-            $publicKey    = substr($data, 1, $publicKeyLen );
+        if ($core->cipherSuite->isECDHEEnabled()) {
+            $publicKeyLen = Core::_unpack('C', $data[0]);
+            $publicKey = substr($data, 1, $publicKeyLen);
 
             $preMaster = $extensions->call('Curve', 'calculatePreMaster', null, $publicKey);
         }
         // RSA
-        else
-        {
+        else {
             // https://tools.ietf.org/html/rfc5246#section-7.4.7.1
             // Get a Premaster Secret
-            $preMasterLen = Core::_unpack( 'n', $data[0] . $data[1] );
-    
-            $encPreMaster = substr($data, 2, $preMasterLen );
-    
+            $preMasterLen = Core::_unpack('n', $data[0] . $data[1]);
+
+            $encPreMaster = substr($data, 2, $preMasterLen);
+
             $privateKey = $core->getConfig('private_key');
             openssl_private_decrypt($encPreMaster, $preMaster, $privateKey);
-    
+
             $vMajor = Core::_unpack('C', $preMaster[0]);
             $vMinor = Core::_unpack('C', $preMaster[1]);
 
             list($vMajor2, $vMinor2) = $core->getVersion();
 
-            if( $vMajor != $vMajor2 || $vMinor != $vMinor )
-                throw new TLSAlertException(Alert::create(Alert::BAD_RECORD_MAC), 
+            if ($vMajor != $vMajor2 || $vMinor != $vMinor) {
+                throw new TLSAlertException(Alert::create(Alert::BAD_RECORD_MAC),
                     "Invalid protocol version in PreMaster $vMajor <=> $vMajor2, $vMinor <=> $vMinor2");
+            }
         }
 
         $this->setKeys($preMaster, $connOut, $connIn);
@@ -93,28 +94,25 @@ class ClientKeyExchange extends HandshakeAbstract
         $connIn = $core->getInDuplex();
 
         // ECDHE
-        if( $core->cipherSuite->isECDHEEnabled() )
-        {
+        if ($core->cipherSuite->isECDHEEnabled()) {
             $extensions = $core->extensions;
             $data = $extensions->call('Curve', 'decodeClientKeyExchange', '');
 
             $preMaster = $extensions->call('Curve', 'getPremaster', null);
         }
         // RSA
-        else
-        {
+        else {
             $preMaster = Core::_pack('C', $vMajor)
                        . Core::_pack('C', $vMinor)
                        . Core::getRandom(46);
-    
+
             $crtDers = $core->getCrtDers();
             $publicKey = X509::getPublicKey($crtDers);
 
             openssl_public_encrypt($preMaster, $encPreMaster, $publicKey);
-    
-            $data  = Core::_pack('n', strlen($encPreMaster) ) 
-                   . $encPreMaster;
 
+            $data = Core::_pack('n', strlen($encPreMaster))
+                   . $encPreMaster;
         }
 
         // Set Master Secret, IV and MAC
@@ -129,16 +127,15 @@ class ClientKeyExchange extends HandshakeAbstract
     public function debugInfo()
     {
         $connOut = $core->getOutDuplex();
-        $connIn  = $core->getInDuplex();
+        $connIn = $core->getInDuplex();
 
-        foreach(['OUT' => $connOut, 'IN' => $connIn] as $key => $conn )
-        {
+        foreach (['OUT' => $connOut, 'IN' => $connIn] as $key => $conn) {
             $arr[$key] = [
                 'Random'        => base64_encode($conn->random),
-                'CipherChanged' => (($conn->isCipherChanged) ? 'True' : 'False' ),
+                'CipherChanged' => (($conn->isCipherChanged) ? 'True' : 'False'),
                 'Key'           => ('MAC:       ' . base64_encode($connOut->MAC)
-                                .  'IV:        ' . base64_encode($connOut->IV)
-                                .  'MasterKEY: ' . base64_encode($connOut->Key)),
+                                . 'IV:        ' . base64_encode($connOut->IV)
+                                . 'MasterKEY: ' . base64_encode($connOut->Key)),
             ];
         }
 
@@ -146,12 +143,7 @@ class ClientKeyExchange extends HandshakeAbstract
                 . 'OUT: ' . explode("\n", $arr['OUT']) . "\n";
 
         return "[HandshakeType::ClientKeyExchange]\n"
-             . "Lengh:                   " . $this->length . "\n"
+             . 'Lengh:                   ' . $this->length . "\n"
              . $output;
     }
-
 }
-
-
-
-

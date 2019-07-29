@@ -1,93 +1,92 @@
 <?php
 
+declare(strict_types=1);
+
 namespace PTLS\Handshake;
 
-use PTLS\Core;
-use PTLS\Prf;
 use PTLS\CipherSuites;
-use PTLS\Exceptions\TLSAlertException;
 use PTLS\Content\Alert;
+use PTLS\Core;
+use PTLS\Exceptions\TLSAlertException;
 
 class ClientHello extends HandshakeAbstract
 {
     /**
-     * For Debug
+     * For Debug.
      */
     private $requestedExtensions;
     private $requestCipherIDs;
 
-    function __construct(Core $core)
+    public function __construct(Core $core)
     {
         parent::__construct($core);
     }
 
     /**
      * Client Hello
-     * https://tools.ietf.org/html/rfc5246#section-7.4.1.2
+     * https://tools.ietf.org/html/rfc5246#section-7.4.1.2.
      */
     public function encode($data)
     {
-        $core    = $this->core;
+        $core = $this->core;
         $connIn = $core->getInDuplex();
 
         $data = $this->encodeHeader($data);
 
         // https://tools.ietf.org/html/rfc5246#section-7.4.1.2
-        $vMajor = $major = Core::_unpack( 'C', $data[0] );
-        $vMinor = $minor = Core::_unpack( 'C', $data[1] );
+        $vMajor = $major = Core::_unpack('C', $data[0]);
+        $vMinor = $minor = Core::_unpack('C', $data[1]);
 
         // Set TLS Version
         $core->setVersion($vMajor, $vMinor);
 
         // Get and set Client Random
-        $random = substr( $data, 2, 32 );
+        $random = substr($data, 2, 32);
 
         $connIn->random = $random;
 
-        $sessionLength = Core::_unpack( 'C', $data[34] );
+        $sessionLength = Core::_unpack('C', $data[34]);
 
         $data = substr($data, 35);
 
         // SessionID if > 0
-        if( $sessionLength > 0 )
-        {
-             $sessionID = substr( $data, 0, $sessionLength);
-             $core->setSessionID($sessionID);
-             $data = substr($data, $sessionLength);
+        if ($sessionLength > 0) {
+            $sessionID = substr($data, 0, $sessionLength);
+            $core->setSessionID($sessionID);
+            $data = substr($data, $sessionLength);
         }
 
-        $cipherLength = Core::_unpack( 'n', $data[0] . $data[1] );
+        $cipherLength = Core::_unpack('n', $data[0] . $data[1]);
 
         $data = substr($data, 2);
 
         $cipherIDs = [];
 
         // https://github.com/pornin/TestSSLServer/blob/master/Src/CipherSuite.cs
-        for( $i = 0; $i < $cipherLength; $i += 2 )
-        {
+        for ($i = 0; $i < $cipherLength; $i += 2) {
             // https://tools.ietf.org/html/rfc5246#section-7.4.1.2
-            $cipher1 = Core::_unpack( 'C', $data[$i] );
-            $cipher2 = Core::_unpack( 'C', $data[$i+1] );
+            $cipher1 = Core::_unpack('C', $data[$i]);
+            $cipher2 = Core::_unpack('C', $data[$i + 1]);
 
-            $cipherIDs[] = [$cipher1 , $cipher2];
+            $cipherIDs[] = [$cipher1, $cipher2];
         }
 
         $this->requestCipherIDs = $cipherIDs;
 
         $data = substr($data, $cipherLength);
 
-        $compressionLength = Core::_unpack( 'C', $data[0]  );
-        $compressionMethod = Core::_unpack( 'C', $data[1] );
+        $compressionLength = Core::_unpack('C', $data[0]);
+        $compressionMethod = Core::_unpack('C', $data[1]);
 
-        if( $compressionMethod != 0x00 )
-            throw new TLSAlertException(Alert::create(Alert::HANDSHAKE_FAILURE), "compressionMethod is not null");
-
+        if ($compressionMethod != 0x00) {
+            throw new TLSAlertException(Alert::create(Alert::HANDSHAKE_FAILURE), 'compressionMethod is not null');
+        }
         $core->setCompressionMethod($compressionMethod);
 
         // Extensions
-        $extLength = Core::_unpack( 'n', $data[2] . $data[3] );
+        $extLength = Core::_unpack('n', $data[2] . $data[3]);
 
-        $data = substr( $data, 4, $extLength );
+        $data = substr($data, 4, $extLength);
 
         $this->requestedExtensions = $extensions = $this->encodeExtensions($data);
 
@@ -95,9 +94,9 @@ class ClientHello extends HandshakeAbstract
 
         $cipherID = CipherSuites::pickCipherID($core, $cipherIDs);
 
-        if( is_null( $cipherID ) )
-            throw new TLSAlertException(Alert::create(Alert::INTERNAL_ERROR), "Cipher Suite not found");
-
+        if (is_null($cipherID)) {
+            throw new TLSAlertException(Alert::create(Alert::INTERNAL_ERROR), 'Cipher Suite not found');
+        }
         $core->cipherSuite = new CipherSuites($cipherID);
     }
 
@@ -105,14 +104,14 @@ class ClientHello extends HandshakeAbstract
     {
         $core = $this->core;
         $connOut = $core->getOutDuplex();
-       
+
         list($vMajor, $vMinor) = $core->getVersion();
- 
+
         // Set client random
         $connOut->random = Core::getRandom(32);
- 
+
         // Set TLS Version
-        $data = Core::_pack('C', $vMajor ) . Core::_pack('C', $vMinor);
+        $data = Core::_pack('C', $vMajor) . Core::_pack('C', $vMinor);
 
         // Client Random
         $data .= $connOut->random;
@@ -123,10 +122,10 @@ class ClientHello extends HandshakeAbstract
         // Cipher Suite
         $cipherSuiteList = CipherSuites::decodeCipherList();
 
-        $data .= Core::_pack('n', strlen($cipherSuiteList) ) . $cipherSuiteList;
+        $data .= Core::_pack('n', strlen($cipherSuiteList)) . $cipherSuiteList;
 
         // Compression method
-        $data .= Core::_pack('C', 0x01 ) . Core::_pack('C', $core->getCompressionMethod());
+        $data .= Core::_pack('C', 0x01) . Core::_pack('C', $core->getCompressionMethod());
 
         // Extension Length
         //$data .= Core::_pack('n', 0x00);
@@ -159,28 +158,26 @@ class ClientHello extends HandshakeAbstract
         $connIn = $this->core->getInDuplex();
 
         $protoVersion = $core->getProtocolVersion();
-        $sessionID    = base64_encode($core->getSessionID());
+        $sessionID = base64_encode($core->getSessionID());
         $compressionMethod = $core->getCompressionMethod();
 
         $cipherSuites = [];
 
         // [$cipher1 , $cipher2]
-        foreach( $this->requestCipherIDs as $value )
-        {
-            $cipherSuites[] = "0x" . dechex($value[0]) . dechex($value[1]);
+        foreach ($this->requestCipherIDs as $value) {
+            $cipherSuites[] = '0x' . dechex($value[0]) . dechex($value[1]);
         }
 
         $extensions = [];
 
         // ['type' => $extType, 'data' => $extData]
-        foreach( $this->requestedExtensions as $value )
-        {
-            $extensions[]= "Type: " . dechex($value['type'])
-                         . ' Data Length: ' . strlen($value['data'] );
+        foreach ($this->requestedExtensions as $value) {
+            $extensions[] = 'Type: ' . dechex($value['type'])
+                         . ' Data Length: ' . strlen($value['data']);
         }
 
         return "[HandshakeType::ServerHello]\n"
-             . "Lengh:            " . $this->length . "\n"
+             . 'Lengh:            ' . $this->length . "\n"
              . "Protocol Version: $protoVersion \n"
              . "Session ID:       $sessionID \n"
              . "[CipherSuites]\n"
@@ -188,11 +185,4 @@ class ClientHello extends HandshakeAbstract
              . "[Extensions]\n"
              . implode("\n", $extensions);
     }
-
 }
-
-
-
-
-
-

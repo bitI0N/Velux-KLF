@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace PTLS\Content;
 
 use PTLS\Core;
@@ -9,22 +11,23 @@ class ApplicationData extends ProtocolAbstract
 {
     private $core;
 
-    function __construct(Core $core)
+    public function __construct(Core $core)
     {
         $this->core = $core;
     }
 
     public function encode($data)
     {
-         $this->core->getBufferIn()->append($data);
+        $this->core->getBufferIn()->append($data);
     }
 
-    public function decode(){}
+    public function decode()
+    {
+    }
 
     public function debugInfo()
     {
         return  "[ApplicationData]\n"
-              . "Data Length: " . $this->core->getBufferIn()->length();
+              . 'Data Length: ' . $this->core->getBufferIn()->length();
     }
 }
-

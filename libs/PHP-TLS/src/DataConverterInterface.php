@@ -1,16 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace PTLS;
 
 interface DataConverterInterface
 {
     /**
-     * Unserialize
+     * Unserialize.
      */
-    function encode($data);
+    public function encode($data);
 
     /**
-     *  Serialize to TLS format
+     *  Serialize to TLS format.
      */
-    function decode();
+    public function decode();
 }
