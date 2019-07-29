@@ -17,7 +17,7 @@ An- und ablernen von Geräten im KLF200 Gateway.
 3. [Software-Installation](#3-software-installation)
 4. [Einrichten der Instanzen in IP-Symcon](#4-einrichten-der-instanzen-in-ip-symcon)
 5. [Statusvariablen und Profile](#5-statusvariablen-und-profile)
-6. [WebFront](#6-webfront)
+6. [Gateway Kommandos](#6-gateway-kommandos)
 7. [PHP-Befehlsreferenz](#7-php-befehlsreferenz) 
 8. [Lizenz](#8-lizenz)
 
@@ -38,15 +38,19 @@ Dieses Modul ist ein Bestandteil des Symcon-Modul: [VeluxKLF200](../)
 
 ## 4. Einrichten der Instanzen in IP-Symcon
 
- Eine einfache Einrichtung ist über die im Objektbaum unter 'Discovery Instanzen' zu findene Instanz [Onkyo bzw Pioneer AVR Discovery'](../OnkyoAVRDiscovery/readme.md) möglich.  
+Eine einfache Einrichtung ist über diese Instanz möglich.  
+Bei der installation aus dem Store wird das anlegen der Instanz automatisch angeboten.  
 
-Bei der manuellen Einrichtung ist das Modul im Dialog 'Instanz hinzufügen' unter den Hersteller 'Onkyo' zufinden.  
+In den sich öffnenen Konfigurationsfenstern ist das Passwort und die IP-Adresse bzw. der Hostname einzutragen.  
+``Das Standardkennwort ist dasselbe wie das auf der Rückseite des KLF200 angegebene WLAN-Kennwort.``  
+
+Bei der manuellen Einrichtung ist das Modul im Dialog 'Instanz hinzufügen' unter den Hersteller 'VELUX' zufinden.  
 ![Instanz hinzufügen](../imgs/instanzen.png)  
 
 Alternativ ist es auch in der Liste alle Konfiguratoren aufgeführt.  
 ![Instanz hinzufügen](../imgs/instanzen_configurator.png)  
 
-Es wird automatisch eine 'ISCP Splitter' Instanz erzeugt, wenn noch keine vorhanden ist.  
+Es wird automatisch eine 'KLF200 Splitter' Instanz erzeugt, wenn noch keine vorhanden ist.  
 Werden in dem sich öffnenden Konfigurationsformular keine Geräte angezeigt, so ist zuerst die IO-Instanz korrekt zu konfigurieren.  
 Diese kann über die Schaltfläche 'Gateway konfigurieren' und dann 'Schnittstelle konfigurieren' erreicht werden.  
 
@@ -58,17 +62,34 @@ können Instanzen in IPS angelegt werden.
 
 ## 5. Statusvariablen und Profile
 
-Der Konfigurator besitzt keine Statusvariablen und Variablenprofile.  
+**TODO**  
 
-## 6. WebFront
+## 6. Gateway Kommandos
 
-Der Konfigurator besitzt keine im WebFront darstellbaren Elemente.  
+**TODO**  
 
 ## 7. PHP-Befehlsreferenz
 
-Der Konfigurator besitzt keine Instanz-Funktionen.  
+**TODO**  
 
 ## 8. Lizenz
 
   IPS-Modul:  
   [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)  
+
+  Submodules:  
+  **PHP-TLS**  
+  https://github.com/rnaga/PHP-TLS  
+    Copyright (c) 2016 Ryohei Nagatsuka    
+
+  **Pure PHP Elliptic Curve Cryptography Library**  
+  https://github.com/phpecc/phpecc  
+
+  **Assert**  
+  https://github.com/beberlei/assert  
+    Copyright (c) 2011-2013, Benjamin Eberlei, All rights reserved.  
+
+  **AES GCM (Galois Counter Mode) PHP Implementation**  
+  https://github.com/Spomky-Labs/php-aes-gcm  
+    Copyright (c) 2016 Spomky-Labs  
+
