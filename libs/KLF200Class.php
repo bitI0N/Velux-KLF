@@ -83,7 +83,6 @@ class APIData
     {
         return \KLF200\ErrorNTF::ToString($this->LastError);
     }
-
 }
 
 class ErrorNTF
@@ -118,7 +117,6 @@ class ErrorNTF
                 return 'Not authenticated.';
         }
     }
-
 }
 
 class State
@@ -152,7 +150,6 @@ class State
                 return 'unknow state value: 0x' . sprintf('%02X', $State);
         }
     }
-
 }
 
 class RunStatus
@@ -172,7 +169,6 @@ class RunStatus
                 return 'Execution is still active.';
         }
     }
-
 }
 
 class StatusReply
@@ -315,7 +311,6 @@ class StatusReply
                 return 'the parameter was limited by an emergency';
         }
     }
-
 }
 
 class APICommand
@@ -845,7 +840,6 @@ class APICommand
                 return 'IGNORE_2124';
         }
     }
-
 }
 
 class Node
@@ -887,7 +881,6 @@ class Node
         0x0600 => 'Swinging Shutters',
         0x0601 => 'Swinging Shutter with independent handling of the leaves'
     ];
-
 }
 
 /* @} */
