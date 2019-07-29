@@ -12,16 +12,4 @@
 	url = https://github.com/Spomky-Labs/php-aes-gcm
 [submodule "libs/PHP-TLS"]
 	path = libs/PHP-TLS
-url=https://github.com/Nall-chan/PHP-TLS[submodule "libs/assert"]
-	path = libs/assert
-	url = https://github.com/beberlei/assert
-[submodule "libs/phpecc"]
-	path = libs/phpecc
-	url = https://github.com/phpecc/phpecc
-[submodule "libs/AESGCM"]
-	path = libs/AESGCM
-	url = https://github.com/Spomky-Labs/php-aes-gcm
-[submodule "libs/PHP-TLS"]
-	path = libs/PHP-TLS
 url=https://github.com/Nall-chan/PHP-TLS
-
