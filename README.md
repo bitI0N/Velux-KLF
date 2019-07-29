@@ -7,7 +7,7 @@
 # VeluxKLF200
 
 Diese Implementierung der API von dem Velux KLF200 Gateway
-ermöglich die Einbindung allen io-homecontrol® Geräten, welche von diesem Gateway unterstützt werden.  
+ermöglich die Einbindung von allen io-homecontrol® Geräten, welche von diesem Gateway unterstützt werden.  
 
 
 ## Dokumentation
