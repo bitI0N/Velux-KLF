@@ -38,7 +38,7 @@ Dieses Modul ist ein Bestandteil des Symcon-Modul: [VeluxKLF200](../)
 
 ## 4. Einrichten der Instanzen in IP-Symcon
 
-Eine einfache Einrichtung ist über die im Objektbaum unter 'Discovery Instanzen' zu findene Instanz [Onkyo bzw Pioneer AVR Discovery'](../OnkyoAVRDiscovery/readme.md) möglich.  
+ Eine einfache Einrichtung ist über die im Objektbaum unter 'Discovery Instanzen' zu findene Instanz [Onkyo bzw Pioneer AVR Discovery'](../OnkyoAVRDiscovery/readme.md) möglich.  
 
 Bei der manuellen Einrichtung ist das Modul im Dialog 'Instanz hinzufügen' unter den Hersteller 'Onkyo' zufinden.  
 ![Instanz hinzufügen](../imgs/instanzen.png)  
