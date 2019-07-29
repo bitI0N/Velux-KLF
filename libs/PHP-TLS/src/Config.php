@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace PTLS;
 
 use PTLS\Exceptions\TLSException;
-use PTLS\EcDSA;
 
 class Config
 {
@@ -13,53 +14,52 @@ class Config
     private $config;
     private $isServer;
 
-    function __construct(bool $isServer, array $arrConfig)
+    public function __construct(bool $isServer, array $arrConfig)
     {
         $this->isServer = $isServer;
-        $this->config   = [];
+        $this->config = [];
 
-        if( $isServer )
+        if ($isServer) {
             $this->encodeServerConfig($arrConfig);
-        else
+        } else {
             $this->encodeClientConfig($arrConfig);
+        }
     }
 
     private function encodeClientConfig(array $arrConfig)
     {
         // Setting up TLS version
-        if( isset( $arrConfig['version'] ) )
+        if (isset($arrConfig['version'])) {
             $this->config['version'] = $arrConfig['version'];
+        }
     }
 
     private function encodeServerConfig(array $arrConfig)
     {
-        if( !isset( $arrConfig['key_pair_files'] ) )
-            throw new TLSException("No keyPairFiles");
-
+        if (!isset($arrConfig['key_pair_files'])) {
+            throw new TLSException('No keyPairFiles');
+        }
         $keyPairFiles = $arrConfig['key_pair_files'];
 
-        if( !isset( $keyPairFiles['cert']) || !isset( $keyPairFiles['key'] ) )
-            throw new TLSException("Invalid keyPair");
+        if (!isset($keyPairFiles['cert']) || !isset($keyPairFiles['key'])) {
+            throw new TLSException('Invalid keyPair');
+        }
+        $pemCrtFiles = $keyPairFiles['cert'];
+        $pemPriFile = $keyPairFiles['key'][0];
+        $pemPriPassCode = $keyPairFiles['key'][1];
 
-        $pemCrtFiles     = $keyPairFiles['cert'];
-        $pemPriFile      = $keyPairFiles['key'][0];
-        $pemPriPassCode  = $keyPairFiles['key'][1];
-
-        $pemPrivate      = file_get_contents($pemPriFile);
+        $pemPrivate = file_get_contents($pemPriFile);
 
         $this->config['crt_ders'] = X509::crtFilePemToDer($pemCrtFiles);
 
         $this->config['private_key_pem'] = $pemPrivate;
 
         // Check for ECDSA
-        if( EcDSA::isValidPrivateKey($pemPrivate) )
-        {
+        if (EcDSA::isValidPrivateKey($pemPrivate)) {
             $this->config['is_ecdsa'] = true;
             // Get a ECDSA instance for Signature Algorithm
             $this->config['ecdsa'] = new EcDSA($pemPrivate);
-        }
-        else // RSA
-        {
+        } else { // RSA
             $this->config['is_ecdsa'] = false;
             $this->config['private_key'] = X509::getPrivateKey($pemPrivate, $pemPriPassCode);
         }
@@ -67,7 +67,7 @@ class Config
 
     public function get($key, $default = null)
     {
-        return ( isset($this->config[$key] ) ) ? $this->config[$key] : $default;
+        return (isset($this->config[$key])) ? $this->config[$key] : $default;
     }
 
     public function isServer()
@@ -75,4 +75,3 @@ class Config
         return $this->isServer;
     }
 }
-

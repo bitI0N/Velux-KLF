@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace PTLS;
 
 use PTLS\Exceptions\TLSException;
@@ -7,11 +9,11 @@ use PTLS\Exceptions\TLSException;
 class X509
 {
     public static $pemCrtBegin = '-----BEGIN CERTIFICATE-----';
-    public static $pemCrtEnd   = '-----END CERTIFICATE-----';
+    public static $pemCrtEnd = '-----END CERTIFICATE-----';
 
     public static function crtDerToPem($der)
     {
-        $pem  = self::$pemCrtBegin . "\n"
+        $pem = self::$pemCrtBegin . "\n"
               . chunk_split(base64_encode($der), 64)
               . self::$pemCrtEnd;
 
@@ -23,7 +25,7 @@ class X509
         $pem = self::crtDerToPem($der);
         $crt = openssl_x509_parse($pem);
 
-        return is_array( $crt ) ? true : false;
+        return is_array($crt) ? true : false;
     }
 
     public static function crtPemToDer($pems)
@@ -33,14 +35,13 @@ class X509
 
         $crtDers = [];
 
-        foreach( $arrPems as $pem )
-        {
+        foreach ($arrPems as $pem) {
             $pem = str_replace(self::$pemCrtEnd, '', $pem);
             $der = base64_decode(str_replace("\n", '', $pem));
 
-            if( !self::verifyCrt($der) )
-                throw new TLSException("Invalid Certificate");
-
+            if (!self::verifyCrt($der)) {
+                throw new TLSException('Invalid Certificate');
+            }
             $crtDers[] = $der;
         }
 
@@ -48,40 +49,32 @@ class X509
     }
 
     /**
-     *  Get the pem file, and convert to der
+     *  Get the pem file, and convert to der.
      */
     public static function crtFilePemToDer(array $files)
     {
-        if( !count( $files ) )
-            throw new TLSException("No certificate files");
-
+        if (!count($files)) {
+            throw new TLSException('No certificate files');
+        }
         $pem = '';
 
-        foreach( $files as $file )
-        {
+        foreach ($files as $file) {
             $pem .= file_get_contents($file);
         }
 
         return self::crtPemToDer($pem);
     }
 
-    public static function getPrivateKey($privateKeyPem, $passCode = "")
+    public static function getPrivateKey($privateKeyPem, $passCode = '')
     {
         return openssl_get_privatekey($privateKeyPem, $passCode);
     }
 
     public static function getPublicKey(array $crtDers)
     {
-        $pem = X509::crtDerToPem($crtDers[0]);
+        $pem = self::crtDerToPem($crtDers[0]);
         $publicKey = openssl_pkey_get_public($pem);
 
         return $publicKey;
     }
 }
-
-
-
-
-
-
-

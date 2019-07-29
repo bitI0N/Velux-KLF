@@ -1,32 +1,35 @@
 <?php
 
+declare(strict_types=1);
+
 namespace PTLS;
 
 class Debug
 {
     private $core;
 
-    function __construct(Core $core)
+    public function __construct(Core $core)
     {
-        $this->core = $core;        
+        $this->core = $core;
     }
 
     public function getProtocolVersion()
     {
         list($vMajor, $vMinor) = $this->core->getVersion();
-        return "1." . ($vMinor - 1);
+        return '1.' . ($vMinor - 1);
     }
 
     public function getCertificates()
     {
         $crtDers = $this->core->getCrtDers();
 
-        if( !count( $crtDers ) ) return '';
+        if (!count($crtDers)) {
+            return '';
+        }
 
         $output = [];
 
-        foreach( $crtDers as $der )
-        {
+        foreach ($crtDers as $der) {
             $output[] = X509::crtDerToPem($der);
         }
 
@@ -35,16 +38,18 @@ class Debug
 
     public function getPrivateKey()
     {
-        if( !$this->core->isServer )
+        if (!$this->core->isServer) {
             return;
+        }
 
         return $this->core->getConfig('private_key');
     }
 
     public function getUsingCipherSuite()
     {
-        if( is_null( $this->core->cipherSuite ) )
+        if (is_null($this->core->cipherSuite)) {
             return;
+        }
 
         return $this->core->cipherSuite->debugInfo();
     }
@@ -66,8 +71,4 @@ class Debug
              . $recordIn->debugInfo()
              . "\n================================================\n";
     }
-
 }
-
-
-

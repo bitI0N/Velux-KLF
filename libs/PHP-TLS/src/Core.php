@@ -1,50 +1,48 @@
 <?php
 
+declare(strict_types=1);
+
 namespace PTLS;
 
-use PTLS\Buffer;
+use PTLS\Content\Alert;
 use PTLS\Content\ClientContent;
 use PTLS\Content\ServerContent;
-use PTLS\ConnectionDuplex;
-use PTLS\Extensions\TLSExtensions;
-use PTLS\X509;
 use PTLS\Exceptions\TLSAlertException;
-use PTLS\Content\Alert;
+use PTLS\Extensions\TLSExtensions;
 
 class Core
 {
     public $isServer;
 
     /**
-     * True when handshake is done and connection is established
+     * True when handshake is done and connection is established.
      */
     public $isHandshaked;
 
-
     /**
-     * True when alert message is received
+     * True when alert message is received.
      */
     public $isClosed;
 
     /**
      *  https://tools.ietf.org/html/rfc5246#appendix-A.5
-     *  The Cipher Suite
+     *  The Cipher Suite.
      */
     public $cipherSuite;
 
     /**
      * https://tools.ietf.org/html/rfc5246#section-5
-     *  HMAC and the Pseudorandom Function
+     *  HMAC and the Pseudorandom Function.
      */
     public $prf;
 
     /**
-     * https://tools.ietf.org/html/rfc5246#section-7.4.1.4
+     * https://tools.ietf.org/html/rfc5246#section-7.4.1.4.
      */
     public $extensions;
 
     /**
-     * https://tools.ietf.org/html/rfc5246#section-6.2.1
+     * https://tools.ietf.org/html/rfc5246#section-6.2.1.
      *
      * Content Encoder
      */
@@ -53,20 +51,22 @@ class Core
     private $config;
 
     /**
-     * https://tools.ietf.org/html/rfc5246#appendix-A.1
+     * https://tools.ietf.org/html/rfc5246#appendix-A.1.
      *
      * TLS Protocol Version
      */
-    private $vMajor = null, $vMinor = null;
+    private $vMajor = null;
+    private $vMinor = null;
 
     /**
-     *  Set default TLS version as 1.2
+     *  Set default TLS version as 1.2.
      */
-    private $vMajorDefault = 3, $vMinorDefault = 3;
+    private $vMajorDefault = 3;
+    private $vMinorDefault = 3;
     private $protocolVersion;
 
     /**
-     * https://tools.ietf.org/html/rfc5246#section-7.4.7
+     * https://tools.ietf.org/html/rfc5246#section-7.4.7.
      *
      * Client Key Exchange Message
      */
@@ -81,7 +81,7 @@ class Core
      * https://tools.ietf.org/html/rfc5246#section-7.4.1.1
      * This message MUST NOT be included in the message hashes that are
      * maintained throughout the handshake and used in the Finished messages
-     * and the certificate verify message 
+     * and the certificate verify message
      */
     private $handshakeMessages;
 
@@ -94,21 +94,22 @@ class Core
     private $sessionID;
 
     /**
-     * No compression method for this library(null)
+     * No compression method for this library(null).
      */
     private $compressionMethod;
 
     /**
-     * Certificates used by a server
+     * Certificates used by a server.
      */
     private $crtDers;
 
     private $server; // ConnectionDuplex
     private $client; // ConnectionDuplex
 
-    private $bufferIn, $bufferOut; // Buffer
+    private $bufferIn;
+    private $bufferOut; // Buffer
 
-    function __construct(bool $isServer, Config $config)
+    public function __construct(bool $isServer, Config $config)
     {
         $this->config = $config;
 
@@ -122,7 +123,7 @@ class Core
 
         $this->handshakeMessages = '';
 
-        $this->bufferIn  = new Buffer();
+        $this->bufferIn = new Buffer();
         $this->bufferOut = new Buffer();
 
         $this->extensions = new TLSExtensions($this);
@@ -135,58 +136,56 @@ class Core
 
         $this->handshakeMessages = [];
 
-        if( $isServer )
-        {
+        if ($isServer) {
             $this->crtDers = $this->config->get('crt_ders');
             $this->content = new ServerContent($this);
-        }
-        else // Client
-        {
+        } else { // Client
             $this->content = new ClientContent($this);
             $this->setVersion(3, $config->get('version', $this->vMinorDefault));
         }
     }
 
     /**
-     * Getter and Setter
+     * Getter and Setter.
      */
     public function __call(string $name, array $args)
     {
-        if( strlen($name) < 3 ) 
+        if (strlen($name) < 3) {
             throw new TLSAlertException(Alert::create(Alert::INTERNAL_ERROR), "Core::$name too short");
-
+        }
         $properties = ['bufferIn', 'bufferOut', 'sessionID', 'compressionMethod', 'masterSecret', 'crtDers'];
 
         $getOrSet = substr($name, 0, 3);
 
-        if( $getOrSet != 'get' && $getOrSet != 'set' )
+        if ($getOrSet != 'get' && $getOrSet != 'set') {
             throw new TLSAlertException(Alert::create(Alert::INTERNAL_ERROR), "Core::$name not exist");
-
+        }
         $property = substr($name, 3);
         $property[0] = strtolower($property[0]);
 
-        if( !in_array($property, $properties) )
+        if (!in_array($property, $properties)) {
             throw new TLSAlertException(Alert::create(Alert::INTERNAL_ERROR), "Core::$property not exist");
-
+        }
         // Getter
-        if( $getOrSet == 'get' )
+        if ($getOrSet == 'get') {
             return $this->$property;
+        }
 
-        if( !isset( $args[0] ) )
+        if (!isset($args[0])) {
             throw new TLSAlertException(Alert::create(Alert::INTERNAL_ERROR), "No args set for Core::$property");
-
-        // Setter    
-        $this->$property = $args[0]; 
+        }
+        // Setter
+        $this->$property = $args[0];
     }
 
     public function getOutDuplex()
     {
-        return ($this->isServer ) ? $this->server : $this->client;
+        return ($this->isServer) ? $this->server : $this->client;
     }
 
     public function getInDuplex()
     {
-        return ($this->isServer ) ? $this->client : $this->server;
+        return ($this->isServer) ? $this->client : $this->server;
     }
 
     public function getProtocolVersion()
@@ -196,48 +195,54 @@ class Core
 
     public function getVersion()
     {
-        if( $this->vMajor == 0 || $this->vMinor == 0 )
+        if ($this->vMajor == 0 || $this->vMinor == 0) {
             return [$this->vMajorDefault, $this->vMinorDefault];
+        }
 
         return [$this->vMajor, $this->vMinor];
     }
 
     public function setVersion($vMajor, $vMinor)
     {
-        if( $vMajor != 3 || ( $vMinor > 3 && $vMinor < 2 ) )
+        if ($vMajor != 3 || ($vMinor > 3 && $vMinor < 2)) {
             throw new TLSAlertException(Alert::create(Alert::PROTOCOL_VERSION), "Unsupported Protocol $vMajor:$vMinor");
-
-        if( !is_null( $this->protocolVersion ) )
+        }
+        if (!is_null($this->protocolVersion)) {
             return;
+        }
 
         $this->vMajor = $vMajor;
         $this->vMinor = $vMinor;
 
         // TLS1.2
-        if( $this->vMinor == 3 )
+        if ($this->vMinor == 3) {
             $this->protocolVersion = 32;
+        }
         // TLS1.1
-        else
+        else {
             $this->protocolVersion = 31;
+        }
     }
 
     /**
-     * All Handshake messages must be recorded
+     * All Handshake messages must be recorded.
      */
     public function countHandshakeMessages($msg)
     {
-        if( $this->isHandshaked )
+        if ($this->isHandshaked) {
             return;
+        }
 
         $this->handshakeMessages[] = $msg;
     }
 
     public function getHandshakeMessages($sub = 0)
     {
-        if( $sub != 0 )
+        if ($sub != 0) {
             $msg = implode('', array_slice($this->handshakeMessages, 0, count($this->handshakeMessages) - $sub));
-        else
+        } else {
             $msg = implode('', $this->handshakeMessages);
+        }
 
         return $msg;
     }
@@ -248,36 +253,30 @@ class Core
     }
 
     /**
-     *  Generate client/server random, IV, PreMaster for RSA Key Exchange
+     *  Generate client/server random, IV, PreMaster for RSA Key Exchange.
      */
     public static function getRandom($length)
     {
         $random = openssl_random_pseudo_bytes($length, $strong);
 
-        if( true !== $strong )
-            throw new TLSAlertException(Alert::create(Alert::INTERNAL_ERROR), "Random byte not strong");
-
+        if (true !== $strong) {
+            throw new TLSAlertException(Alert::create(Alert::INTERNAL_ERROR), 'Random byte not strong');
+        }
         return $random;
     }
 
-    public static function _unpack( $f, $d )
+    public static function _unpack($f, $d)
     {
-        $r = unpack( $f, $d );
+        $r = unpack($f, $d);
 
-        if( !is_array($r) || !isset($r[1]) )
+        if (!is_array($r) || !isset($r[1])) {
             throw new TLSAlertException(Alert::create(Alert::INTERNAL_ERROR), "unpack failed. format: $f, data: $d");
-
+        }
         return $r[1];
     }
 
-    public static function _pack( $f, $d )
+    public static function _pack($f, $d)
     {
-        return pack( $f, $d );
+        return pack($f, $d);
     }
 }
-
-
-
-
-
-

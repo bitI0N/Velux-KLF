@@ -1,17 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace PTLS\Handshake;
 
 use PTLS\Core;
-use PTLS\Handshake\HandshakeType;
 use PTLS\Exceptions\TLSAlertException;
 
 abstract class HandshakeFactory
 {
     public static function getInstance(Core $core, int $type)
     {
-        switch( $type )
-        {
+        switch ($type) {
             case HandshakeType::HELLO_REQUEST:
                 return new HelloRequest($core);
             case HandshakeType::CLIENT_HELLO:
@@ -33,4 +33,3 @@ abstract class HandshakeFactory
         throw new TLSAlertException(Alert::create(Alert::UNEXPECTED_MESSAGE), "Unknow Handshake Type: $type");
     }
 }
-

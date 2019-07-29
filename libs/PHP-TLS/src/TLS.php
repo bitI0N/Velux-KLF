@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace PTLS;
 
 use PTLS\Exceptions\TLSAlertException;
@@ -10,7 +12,7 @@ class TLS implements DataConverterInterface
     private $core;
     private $bufferOut;
 
-    function __construct(bool $isServer, Config $config)
+    public function __construct(bool $isServer, Config $config)
     {
         $this->core = new Core($isServer, $config);
         $this->bufferOut = new Buffer();
@@ -19,7 +21,7 @@ class TLS implements DataConverterInterface
     public function isHandshaked()
     {
         return $this->core->isHandshaked;
-    }   
+    }
 
     public function isClosed()
     {
@@ -38,11 +40,9 @@ class TLS implements DataConverterInterface
 
         $in = $core->getInDuplex();
 
-        try{
+        try {
             $in->encodeRecord($data);
-        }
-        catch(TLSAlertException $e)
-        {
+        } catch (TLSAlertException $e) {
             // Set output if any
             $e->setOutput($core);
 
@@ -55,19 +55,22 @@ class TLS implements DataConverterInterface
     {
         $core = $this->core;
         $coreBufferOut = $core->getBufferOut();
-        
+
         $out = '';
 
-        if( $coreBufferOut->length() > 0 )
+        if ($coreBufferOut->length() > 0) {
             $out = $coreBufferOut->flush();
+        }
 
-        if( !$core->isHandshaked )
+        if (!$core->isHandshaked) {
             return $out;
+        }
 
         $payload = $this->bufferOut->flush();
 
-        if( 0 >= strlen($payload) )
+        if (0 >= strlen($payload)) {
             return $out;
+        }
 
         $connOut = $core->getOutDuplex();
 
@@ -78,18 +81,19 @@ class TLS implements DataConverterInterface
 
     public function output($data, $isAppend = false)
     {
-       $core   = $this->core;
-       $bufferOut = $this->bufferOut;
+        $core = $this->core;
+        $bufferOut = $this->bufferOut;
 
-       if( !$core->isHandshaked )
-           throw new TLSException('Handshake is not done');
+        if (!$core->isHandshaked) {
+            throw new TLSException('Handshake is not done');
+        }
+        if ($isAppend) {
+            $bufferOut->append($data);
+        } else {
+            $bufferOut->set($data);
+        }
 
-       if( $isAppend )
-           $bufferOut->append($data);
-       else
-           $bufferOut->set($data); 
-
-       return $this;
+        return $this;
     }
 
     public function append($data)

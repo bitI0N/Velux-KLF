@@ -1,15 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace PTLS;
 
-use Mdanter\Ecc\Crypto\EcDH\EcDH as MdanterEcDH;;
-use Mdanter\Ecc\EccFactory;
-use Mdanter\Ecc\Serializer\Point\UncompressedPointSerializer;
-use Mdanter\Ecc\Primitives\GeneratorPoint;
+use Mdanter\Ecc\Crypto\EcDH\EcDH as MdanterEcDH;
 use Mdanter\Ecc\Crypto\Key\PublicKey;
+use Mdanter\Ecc\EccFactory;
 
 /**
- * https://tools.ietf.org/html/rfc4492#section-5.1.1
+ * https://tools.ietf.org/html/rfc4492#section-5.1.1.
  *
  * enum {
  *    sect163k1 (1), sect163r1 (2), sect163r2 (3),
@@ -30,9 +30,8 @@ use Mdanter\Ecc\Crypto\Key\PublicKey;
  * ------------------------------------------
  * We support below
  * ------------------------------------------
- * self::TYPE_SECP256R1 => secp256r1 
+ * self::TYPE_SECP256R1 => secp256r1
  * self::TYPE_SECP384R1 => secp384r1
- *
  */
 class EcDH
 {
@@ -49,12 +48,11 @@ class EcDH
     private $gen;
     private $privateKey;
     private $publicKey;
-    private $adapter;  
- 
+    private $adapter;
+
     public static function isSupported(int $type)
     {
-        switch($type)
-        {
+        switch ($type) {
             case self::TYPE_SECP256R1:
             case self::TYPE_SECP384R1:
                 return true;
@@ -63,25 +61,25 @@ class EcDH
         return false;
     }
 
-    function __construct($type)
+    public function __construct($type)
     {
         $this->type = $type;
 
-        $this->ecdh  =
+        $this->ecdh =
         $this->curve =
-        $this->gen   =
+        $this->gen =
         $this->privateKey =
-        $this->publicKey  =
+        $this->publicKey =
         $this->adapter = null;
     }
 
     private function getGenerator()
     {
-        if( !is_null( $this->gen ) )
+        if (!is_null($this->gen)) {
             return $this->gen;
+        }
 
-        switch($this->type)
-        {
+        switch ($this->type) {
             case self::TYPE_SECP256R1:
                 $gen = EccFactory::getSecgCurves()->generator256r1();
                 break;
@@ -94,16 +92,15 @@ class EcDH
 
         $this->gen = $gen;
         return $this->gen;
-
     }
 
     private function getCurve()
     {
-        if( !is_null( $this->curve ) )
+        if (!is_null($this->curve)) {
             return $this->curve;
+        }
 
-        switch($this->type)
-        {
+        switch ($this->type) {
             case self::TYPE_SECP256R1:
                 $curve = EccFactory::getSecgCurves()->curve256r1();
                 break;
@@ -120,8 +117,9 @@ class EcDH
 
     private function getAdapter()
     {
-        if( !is_null( $this->adapter ) )
+        if (!is_null($this->adapter)) {
             return $this->adapter;
+        }
 
         $this->adapter = EccFactory::getAdapter();
         return $this->adapter;
@@ -129,21 +127,23 @@ class EcDH
 
     private function getEcdh()
     {
-        if( !is_null( $this->ecdh ) )
+        if (!is_null($this->ecdh)) {
             return $this->ecdh;
+        }
 
         $adapter = $this->getAdapter();
 
-        $this->ecdh = new MdanterEcDH($adapter);  
-        return $this->ecdh;  
+        $this->ecdh = new MdanterEcDH($adapter);
+        return $this->ecdh;
     }
 
     public function getPrivateKey()
     {
-        if( !is_null( $this->privateKey ) )
+        if (!is_null($this->privateKey)) {
             return $this->privateKey;
+        }
 
-        $gen = $this->getGenerator();;
+        $gen = $this->getGenerator();
 
         $this->privateKey = $gen->createPrivateKey();
 
@@ -176,26 +176,27 @@ class EcDH
     {
         $length = strlen($publicKeyBin) - 1;
 
-        if( $length % 2 != 0 )
+        if ($length % 2 != 0) {
             return;
+        }
 
-        $half = $length/2;
+        $half = $length / 2;
 
         $x = substr($publicKeyBin, 1, $half);
         $gmpX = gmp_import($x, 1);
 
-        $y = substr($publicKeyBin, $half+1);
+        $y = substr($publicKeyBin, $half + 1);
         $gmpY = gmp_import($y, 1);
 
-        $curve   = $this->getCurve();
+        $curve = $this->getCurve();
         $adapter = $this->getAdapter();
-        $gen     = $this->getGenerator();
-        $ecdh    = $this->getEcdh();
+        $gen = $this->getGenerator();
+        $ecdh = $this->getEcdh();
 
         $point = $curve->getPoint($gmpX, $gmpY);
 
         $privateKey = $this->getPrivateKey();
-        $publicKey  = new PublicKey($adapter, $gen, $point);
+        $publicKey = new PublicKey($adapter, $gen, $point);
 
         $ecdh->setSenderKey($privateKey);
         $ecdh->setRecipientKey($publicKey);
@@ -203,8 +204,5 @@ class EcDH
         $sharedKey = $ecdh->calculateSharedKey();
 
         return gmp_export($sharedKey);
-    } 
+    }
 }
-
-
-
