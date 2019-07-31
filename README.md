@@ -28,13 +28,15 @@ ermöglich die Einbindung von allen io-homecontrol® Geräten, welche von diesem
 ## 1. Funktionsumfang
 
 ### [KLF200 Configurator:](KLF200Configurator/)  
-### [KLF200 Splitter:](KLF200Splitter/)  
+### [KLF200 Gateway:](KLF200Gateway/)  
 ### [KLF200 Node:](KLF200Node/)  
 
 ## 2. Voraussetzungen
 
  - IPS 5.2 (testing Release) oder neuer  
- - KLF200 io-homecontrol® Gateway, per LAN angeschlossen  
+ - KLF200 io-homecontrol® Gateway  
+    - KLF muss per LAN angeschlossen sein  
+    - KLF Firmware 2.0.0.71 oder neuer   
 
 ## 3. Software-Installation
 
@@ -56,7 +58,7 @@ Es wird empfohlen die Einrichtung mit der Konfigurator-Instanz zu starten ([KLF2
 | Modul               | Typ          |Prefix  | GUID                                   |
 | :-----------------: | :----------: | :----: | :------------------------------------: |
 | KLF200 Configurator | Configurator | KLF200 | {38724E6E-8202-4D37-9FA7-BDD2EDA79520} |
-| KLF200 Splitter     | Splitter     | KLF200 | {725D4DF6-C8FC-463C-823A-D3481A3D7003} |
+| KLF200 Gateway      | Splitter     | KLF200 | {725D4DF6-C8FC-463C-823A-D3481A3D7003} |
 | KLF200 Node         | Device       | KLF200 | {4EBD07B1-2962-4531-AC5F-7944789A9CE5} |
 
 ### 2. Changlog
@@ -79,10 +81,10 @@ Es wird empfohlen die Einrichtung mit der Konfigurator-Instanz zu starten ([KLF2
 
 ## 6. Lizenz
 
-  IPS-Modul:  
+### IPS-Modul:  
   [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)  
 
-  Submodules:  
+### Submodules:  
   **PHP-TLS**  
   https://github.com/rnaga/PHP-TLS  
     Copyright (c) 2016 Ryohei Nagatsuka    

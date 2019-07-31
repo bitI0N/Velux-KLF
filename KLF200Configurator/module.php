@@ -1,5 +1,7 @@
 <?php
-
+/**
+ * @todo PASSWORD_CHANGE
+ */
 declare(strict_types=1);
 require_once __DIR__ . '/../libs/KLF200Class.php';  // diverse Klassen
 eval('declare(strict_types=1);namespace KLF200Configurator {?>' . file_get_contents(__DIR__ . '/../libs/helper/BufferHelper.php') . '}');
@@ -233,7 +235,7 @@ class KLF200Configurator extends IPSModule
         return true;
     }
 
-    public function RemoveNodes(int $Node)
+    public function RemoveNode(int $Node)
     {
         if (($Node < 0) or ($Node > 199)) {
             trigger_error(sprintf($this->Translate('%s out of range.'), 'Node'), E_USER_NOTICE);
@@ -348,13 +350,10 @@ class KLF200Configurator extends IPSModule
         $Form['actions'][0]['items'][0]['items'][1]['popup']['items'][1]['values'] = $DeleteNodeValues;
         $Form['actions'][0]['items'][0]['items'][1]['popup']['items'][0]['onClick'] = <<<'EOT'
                 if (is_int($RemoveNode['nodeid'])){
-                    KLF200_RemoveNodes($id,$RemoveNode['nodeid']);
+                    KLF200_RemoveNode($id,$RemoveNode['nodeid']);
                 } else {
                 EOT . ' echo "' . $this->Translate('Nothing selected.') . '";}';
 
-        /*                if(KLF200_RemoveNodes($id,$RemoveNode['nodeid'])){
-          echo
-          EOT . ' "' . $this->Translate('The view will reload after remove is finished.') . '";}'; */
         $Form['actions'][0]['items'][0]['items'][2]['onClick'] = <<<'EOT'
                 if(KLF200_RebootGateway($id)){
                 echo

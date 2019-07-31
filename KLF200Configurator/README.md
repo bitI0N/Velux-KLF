@@ -30,7 +30,9 @@ An- und ablernen von Geräten im KLF200 Gateway.
 ## 2. Voraussetzungen
 
  - IPS ab Version 5.2  
- - KLF200 io-homecontrol® Gateway, per LAN angeschlossen  
+ - KLF200 io-homecontrol® Gateway  
+    - KLF muss per LAN angeschlossen sein  
+    - KLF Firmware 2.0.0.71 oder neuer  
 
 ## 3. Software-Installation
 
@@ -50,11 +52,11 @@ Bei der manuellen Einrichtung ist das Modul im Dialog 'Instanz hinzufügen' unte
 Alternativ ist es auch in der Liste alle Konfiguratoren aufgeführt.  
 ![Instanz hinzufügen](../imgs/instanzen_configurator.png)  
 
-Es wird automatisch eine 'KLF200 Splitter' Instanz erzeugt, wenn noch keine vorhanden ist.  
+Es wird automatisch eine 'KLF200 Gateway' Instanz erzeugt, wenn noch keine vorhanden ist.  
 Werden in dem sich öffnenden Konfigurationsformular keine Geräte angezeigt, so ist zuerst die IO-Instanz korrekt zu konfigurieren.  
 Diese kann über die Schaltfläche 'Gateway konfigurieren' und dann 'Schnittstelle konfigurieren' erreicht werden.  
 
-Ist der Splitter korrekt verbunden, wird beim öffnen des Konfigurator folgendender Dialog angezeigt.  
+Ist die Gateway-Instanz korrekt verbunden, wird beim öffnen des Konfigurator folgendender Dialog angezeigt.  
 ![Konfigurator](../imgs/conf_configurator.png)  
 
 Über das selektieren eines Eintrages in der Tabelle und betätigen des dazugehörigen 'Erstellen' Button,  
@@ -62,22 +64,46 @@ können Instanzen in IPS angelegt werden.
 
 ## 5. Statusvariablen und Profile
 
-**TODO**  
+Der Konfigurator besitzt keine Statusvariablen und Variablenprofile.  
 
 ## 6. Gateway Kommandos
 
-**TODO**  
+In dem Konfigurator sind über den ersten Eintrag die Gateway Kommandos erreichbar.  
+Mit den dort vorhandenen Schaltflächen können Geräte (Nodes) an dem Gateway an- un abgelernt werden, sowie das Gateway selber neugestartet werden.  
+Durch die Schaltfläche 'Suche Gerät', wird die Gerätesuche gestartet. Alle Geräte welche sich im Anlern-Modus befinden werden hierduch an das Gateway angelernt.  
+![Konfigurator](../imgs/conf_configurator1.png)  
+
+Über die Schaltfläche 'Entferne Gerät' wird eine Liste mit allen im Gateway vorhandenen Geräten (Nodes) angezeigt.  
+Durch auswählen eines Eintrages und betätigen von 'Entferne Gerät' wird das Gerät aus dem Gateway gelöscht.  
+![Konfigurator](../imgs/conf_configurator2.png)  
 
 ## 7. PHP-Befehlsreferenz
 
-**TODO**  
+**Folgende Funktionen liefern 'TRUE' bei Erfolg.  
+Im Fehlerfall wird eine Warnung erzeugt und 'FALSE' zurückgegeben.**  
+
+```php
+bool KLF200_DiscoveryNodes(int $InstanzeID);
+```
+Sucht nach neuen Geräten und lernte Diese am Gateway an.  
+
+```php
+bool KLF200_RemoveNode(int $InstanzeID, int $Node);
+```
+Entfernt das angelernte Gerät mit der in '$Node' übergebenen Nodeid aus dem Gateway.    
+
+```php
+bool KLF200_RebootGateway(int $InstanzeID);
+```
+Startet das Gatway KLF200 neu.  
+
 
 ## 8. Lizenz
 
-  IPS-Modul:  
+### IPS-Modul:  
   [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)  
-
-  Submodules:  
+  
+### Submodules:  
   **PHP-TLS**  
   https://github.com/rnaga/PHP-TLS  
     Copyright (c) 2016 Ryohei Nagatsuka    
@@ -92,4 +118,3 @@ können Instanzen in IPS angelegt werden.
   **AES GCM (Galois Counter Mode) PHP Implementation**  
   https://github.com/Spomky-Labs/php-aes-gcm  
     Copyright (c) 2016 Spomky-Labs  
-
