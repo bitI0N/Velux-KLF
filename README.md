@@ -65,11 +65,11 @@ Es wird empfohlen die Einrichtung mit der Konfigurator-Instanz zu starten ([KLF2
 
 **Changlog:**
 
- Version 2.0:  
+ Version 0.5:  
  - Öffentliche Betaversion  
  - Dokumentation erstellt  
 
- Version 0.5:  
+ Version 0.1:  
  - Testversion  
 
 
