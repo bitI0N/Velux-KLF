@@ -413,7 +413,7 @@ class KLF200Node extends IPSModule
                   FP3CurrentPosition FP4CurrentPosition RemainingTime TimeStamp      NbrOfAlias AliasArray
                  */
 
-                $Name = trim(utf8_decode(substr($APIData->Data, 4, 64)));
+                $Name = trim(substr($APIData->Data, 4, 64));
                 $NodeTypeSubType = unpack('n', substr($APIData->Data, 69, 2))[1];
                 $this->SendDebug('NodeID', $NodeID, 0);
                 $this->SendDebug('Name', $Name, 0);

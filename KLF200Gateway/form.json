@@ -12,7 +12,7 @@
                 {
                     "type": "Button",
                     "caption": "Request KLF version",
-                    "onClick": "KLF200_ReadGatewayVersion($id,'ALL');"
+                    "onClick": "KLF200_RequestGatewayVersion($id);"
                 },
                 {
                     "type": "Button",

@@ -65,6 +65,11 @@ Es wird empfohlen die Einrichtung mit der Konfigurator-Instanz zu starten ([KLF2
 
 **Changlog:**
 
+ Version 0.6:
+ - Button im Splitter für das Lesen der Firmwareversion war ohne Funktion.  
+ - Fehler im Konfigurator, wenn Namen der Geräte einen Umlaut enthielt.  
+ - Der Konfigurator hat eine neuen Button, um im laufenden Betrieb die Geräteliste neu zu laden.  
+
  Version 0.5:  
  - Öffentliche Betaversion  
  - Dokumentation erstellt  
