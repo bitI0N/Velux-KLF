@@ -16,7 +16,6 @@ eval('declare(strict_types=1);namespace KLF200Configurator {?>' . file_get_conte
  */
 class KLF200Configurator extends IPSModule
 {
-
     use \KLF200Configurator\Semaphore,
         \KLF200Configurator\BufferHelper,
         \KLF200Configurator\DebugHelper,
@@ -26,6 +25,7 @@ class KLF200Configurator extends IPSModule
 
         \KLF200Configurator\DebugHelper::SendDebug as SendDebug2;
     }
+
     /**
      * Interne Funktion des SDK.
      */
@@ -249,7 +249,7 @@ class KLF200Configurator extends IPSModule
 
     public function RemoveNode(int $Node)
     {
-        if (($Node < 0) or ( $Node > 199)) {
+        if (($Node < 0) or ($Node > 199)) {
             trigger_error(sprintf($this->Translate('%s out of range.'), 'Node'), E_USER_NOTICE);
             return false;
         }
@@ -421,5 +421,4 @@ class KLF200Configurator extends IPSModule
             $this->SendDebug2($Message, $Data, $Format);
         }
     }
-
 }
