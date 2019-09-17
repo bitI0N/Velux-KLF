@@ -59,7 +59,7 @@ class KLF200Node extends IPSModule
         if (($NodeId < 0) or ($NodeId > 255)) {
             $Line = 'NOTHING';
         } else {
-            $NodeId = preg_quote(substr(json_encode(utf8_encode(chr($this->ReadPropertyInteger('NodeId')))),0,-1));
+            $NodeId = preg_quote(substr(json_encode(utf8_encode(chr($this->ReadPropertyInteger('NodeId')))), 0, -1));
             foreach ($APICommands as $APICommand) {
                 $Lines[] = '.*"Command":' . $APICommand . ',"Data":' . $NodeId . '.*';
             }
