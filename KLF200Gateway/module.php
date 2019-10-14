@@ -39,7 +39,6 @@ namespace {
             require_once $file;
             restore_include_path();
         }
-
     }
 
 }
@@ -73,7 +72,6 @@ namespace KLF200Gateway {
                     return 'init';
             }
         }
-
     }
 
     //require_once __DIR__ . '/../libs/loadTLS.php';
@@ -120,7 +118,6 @@ namespace {
      */
     class KLF200Gateway extends IPSModule
     {
-
         use \KLF200Gateway\Semaphore,
             \KLF200Gateway\BufferHelper,
             \KLF200Gateway\DebugHelper,
@@ -131,6 +128,7 @@ namespace {
             \KLF200Gateway\InstanceStatus::RequestAction as IORequestAction;
             \KLF200Gateway\DebugHelper::SendDebug as SendDebug2;
         }
+
         /**
          * Interne Funktion des SDK.
          */
@@ -482,6 +480,7 @@ namespace {
         }
 
         //################# DATAPOINTS CHILDS
+
         /**
          * Interne Funktion des SDK. Nimmt Daten von Childs entgegen und sendet Diese weiter.
          *
@@ -509,6 +508,7 @@ namespace {
         }
 
         //################# DATAPOINTS PARENT
+
         /**
          * Empfängt Daten vom Parent.
          *
@@ -541,7 +541,7 @@ namespace {
                             } catch (\PTLS\Exceptions\TLSAlertException $e) {
                                 $this->SendDebug('Error', $e->getMessage(), 0);
                                 $out = $e->decode();
-                                if (($out !== null) and ( strlen($out) > 0)) {
+                                if (($out !== null) and (strlen($out) > 0)) {
                                     $JSON['DataID'] = '{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}';
                                     $JSON['Buffer'] = utf8_encode($out);
                                     $JsonString = json_encode($JSON);
@@ -671,7 +671,7 @@ namespace {
                 } catch (\PTLS\Exceptions\TLSAlertException $e) {
                     $this->SendDebug('Error', $e->getMessage(), 1);
                     $out = $e->decode();
-                    if (($out !== null) and ( strlen($out) > 0)) {
+                    if (($out !== null) and (strlen($out) > 0)) {
                         $JSON['DataID'] = '{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}';
                         $JSON['Buffer'] = utf8_encode($out);
                         $JsonString = json_encode($JSON);
@@ -684,7 +684,7 @@ namespace {
                 }
 
                 $SendData = $TLS->decode();
-                if (($SendData !== null) and ( strlen($SendData) > 0)) {
+                if (($SendData !== null) and (strlen($SendData) > 0)) {
                     $this->SendDebug('TLS loop ' . $loop, $SendData, 0);
                     $JSON['DataID'] = '{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}';
                     $JSON['Buffer'] = utf8_encode($SendData);
@@ -833,7 +833,6 @@ namespace {
             $this->Multi_TLS = $TLS;
             $this->unlock('TLS');
         }
-
     }
 
 }
