@@ -139,7 +139,7 @@ namespace {
             $this->RegisterPropertyString('Password', '');
             $this->RegisterTimer('KeepAlive', 0, 'KLF200_ReadGatewayState($_IPS[\'TARGET\']);');
             $this->Host = '';
-            $this->State = \KLF200Gateway\TLSState::unknow;
+            $this->TLSState = \KLF200Gateway\TLSState::unknow;
             $this->TLSReceiveBuffer = '';
             $this->WaitForTLSReceive = false;
             $this->ReceiveBuffer = '';
@@ -210,7 +210,7 @@ namespace {
             } else {
                 $this->SetTimerInterval('KeepAlive', 0);
                 $this->SetStatus(IS_INACTIVE);
-                $this->State = \KLF200Gateway\TLSState::unknow;
+                $this->TLSState = \KLF200Gateway\TLSState::unknow;
             }
         }
 
@@ -269,14 +269,14 @@ namespace {
                 return;
             }
 
-            $OldState = $this->State;
+            $OldState = $this->TLSState;
 
             if ($OldState == \KLF200Gateway\TLSState::init) {
                 return;
             }
 
             $this->TLSReceiveBuffer = '';
-            $this->State = \KLF200Gateway\TLSState::unknow;
+            $this->TLSState = \KLF200Gateway\TLSState::unknow;
             $this->WaitForTLSReceive = false;
             $this->ReceiveBuffer = '';
             $this->ReplyAPIData = [];
@@ -419,13 +419,13 @@ namespace {
         {
             if (strlen($this->ReadPropertyString('Password')) > 31) {
                 $this->SetStatus(IS_INACTIVE);
-                $this->State = \KLF200Gateway\TLSState::unknow;
+                $this->TLSState = \KLF200Gateway\TLSState::unknow;
                 return false;
             }
             $Result = $this->CreateConnection();
             if ($Result === false) {
                 $this->SetStatus(IS_EBASE + 2);
-                $this->State = \KLF200Gateway\TLSState::unknow;
+                $this->TLSState = \KLF200Gateway\TLSState::unknow;
                 $this->LogMessage('Error in TLS handshake.', KL_ERROR);
                 return false;
             }
@@ -434,7 +434,7 @@ namespace {
             $ResultAPIData = $this->SendAPIData($APIData, false);
             if ($ResultAPIData === false) {
                 $this->SetStatus(IS_EBASE + 2);
-                $this->State = \KLF200Gateway\TLSState::unknow;
+                $this->TLSState = \KLF200Gateway\TLSState::unknow;
                 return false;
             }
             if ($ResultAPIData->Data != "\x00") {
@@ -463,7 +463,7 @@ namespace {
                 if (!$this->TLSHandshake($TLS)) {
                     return false;
                 }
-                $this->State = \KLF200Gateway\TLSState::Connected;
+                $this->TLSState = \KLF200Gateway\TLSState::Connected;
                 $this->SendDebug('TLS ProtocolVersion', $TLS->getDebug()->getProtocolVersion(), 0);
                 $UsingCipherSuite = explode("\n", $TLS->getDebug()->getUsingCipherSuite());
                 unset($UsingCipherSuite[0]);
@@ -489,7 +489,7 @@ namespace {
          */
         public function ForwardData($JSONString)
         {
-            if ($this->State != \KLF200Gateway\TLSState::Connected) {
+            if ($this->TLSState != \KLF200Gateway\TLSState::Connected) {
                 return serialize(new \KLF200\APIData(\KLF200\APICommand::ERROR_NTF, chr(\KLF200\ErrorNTF::TIMEOUT)));
             }
             $APIData = new \KLF200\APIData($JSONString);
@@ -527,11 +527,11 @@ namespace {
                     if (strlen($TLSData) >= $len) {
                         $Part = substr($TLSData, 0, $len);
                         $TLSData = substr($TLSData, $len);
-                        if ($this->State == \KLF200Gateway\TLSState::init) {
+                        if ($this->TLSState == \KLF200Gateway\TLSState::init) {
                             if (!$this->WriteTLSReceiveData($Part)) {
                                 break;
                             }
-                        } elseif ($this->State == \KLF200Gateway\TLSState::Connected) {
+                        } elseif ($this->TLSState == \KLF200Gateway\TLSState::Connected) {
                             try {
                                 $TLS = $this->GetTLSContext();
                                 $TLS->encode($Part);
@@ -548,7 +548,7 @@ namespace {
                                     parent::SendDataToParent($JsonString);
                                 }
                                 trigger_error($e->getMessage(), E_USER_NOTICE);
-                                $this->State = \KLF200Gateway\TLSState::unknow;
+                                $this->TLSState = \KLF200Gateway\TLSState::unknow;
                                 $this->TLSReceiveBuffer = '';
                                 return;
                             }
@@ -642,7 +642,7 @@ namespace {
 
         private function TLSHandshake(&$TLS)
         {
-            $this->State = \KLF200Gateway\TLSState::init;
+            $this->TLSState = \KLF200Gateway\TLSState::init;
             $this->SendDebug('TLS start', '', 0);
             $loop = 1;
             $SendData = $TLS->decode();
@@ -737,7 +737,7 @@ namespace {
                         throw new Exception($this->Translate('Send is blocked for: ') . \KLF200\APICommand::ToString($APIData->Command), E_USER_ERROR);
                     }
                 }
-                if ($this->State != \KLF200Gateway\TLSState::Connected) {
+                if ($this->TLSState != \KLF200Gateway\TLSState::Connected) {
                     throw new Exception($this->Translate('Socket not connected'), E_USER_NOTICE);
                 }
                 $Data = $APIData->GetSLIPData();
