@@ -1,12 +1,12 @@
 [![Version](https://img.shields.io/badge/Symcon-PHPModul-red.svg?style=flat-square)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
-[![Version](https://img.shields.io/badge/Modul%20Version-0.50-blue.svg?style=flat-square)]()
-[![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg?style=flat-square)](https://creativecommons.org/licenses/by-nc-sa/4.0/)  
-[![Version](https://img.shields.io/badge/Symcon%20Version-5.2%20%3E-green.svg?style=flat-square)](https://www.symcon.de/forum/threads/41251-IP-Symcon-5-2-%28Testing%29)
-[![StyleCI](https://styleci.io/repos/193268520/shield?style=flat-square)](https://styleci.io/repos/193268520)  
+[![Version](https://img.shields.io/badge/Modul%20Version-0.70-blue.svg?style=flat-square)]()
+[![Version](https://img.shields.io/badge/Symcon%20Version-5.5%20%3E-green.svg?style=flat-square)]()  
+[![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg?style=flat-square)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+[![Check Style](https://github.com/Nall-chan/VeluxKLF200/workflows/Check%20Style/badge.svg)](https://github.com/Nall-chan/VeluxKLF200/actions) [![Run Tests](https://github.com/Nall-chan/VeluxKLF200/workflows/Run%20Tests/badge.svg)](https://github.com/Nall-chan/VeluxKLF200/actions)  
 
 # Velux KLF200 Configurator  
 Ermöglicht das Anlegen von Instanzen in IPS.  
-An- und ablernen von Geräten im KLF200 Gateway.  
+An- und ab lernen von Geräten im KLF200 Gateway.  
 
 ## Dokumentation
 
@@ -29,7 +29,7 @@ An- und ablernen von Geräten im KLF200 Gateway.
 
 ## 2. Voraussetzungen
 
- - IPS ab Version 5.2  
+ - IPS ab Version 5.5  
  - KLF200 io-homecontrol® Gateway  
     - KLF muss per LAN angeschlossen sein  
     - KLF Firmware 2.0.0.71 oder neuer  
@@ -43,10 +43,10 @@ Dieses Modul ist ein Bestandteil des Symcon-Modul: [VeluxKLF200](../)
 Eine einfache Einrichtung ist über diese Instanz möglich.  
 Bei der installation aus dem Store wird das anlegen der Instanz automatisch angeboten.  
 
-In den sich öffnenen Konfigurationsfenstern ist das Passwort und die IP-Adresse bzw. der Hostname einzutragen.  
+In den sich öffneden Konfigurationsfenstern ist das Passwort und die IP-Adresse bzw. der Hostname einzutragen.  
 ``Das Standardkennwort ist dasselbe wie das auf der Rückseite des KLF200 angegebene WLAN-Kennwort.``  
 
-Bei der manuellen Einrichtung ist das Modul im Dialog 'Instanz hinzufügen' unter den Hersteller 'VELUX' zufinden.  
+Bei der manuellen Einrichtung ist das Modul im Dialog 'Instanz hinzufügen' unter den Hersteller 'VELUX' zu finden.  
 ![Instanz hinzufügen](../imgs/instanzen.png)  
 
 Alternativ ist es auch in der Liste alle Konfiguratoren aufgeführt.  
@@ -69,8 +69,8 @@ Der Konfigurator besitzt keine Statusvariablen und Variablenprofile.
 ## 6. Gateway Kommandos
 
 In dem Konfigurator sind über den ersten Eintrag die Gateway Kommandos erreichbar.  
-Mit den dort vorhandenen Schaltflächen können Geräte (Nodes) an dem Gateway an- un abgelernt werden, sowie das Gateway selber neugestartet werden.  
-Durch die Schaltfläche 'Suche Gerät', wird die Gerätesuche gestartet. Alle Geräte welche sich im Anlern-Modus befinden werden hierduch an das Gateway angelernt.  
+Mit den dort vorhandenen Schaltflächen können Geräte (Nodes) an dem Gateway an- un ab gelernt werden, sowie das Gateway selber neugestartet werden.  
+Durch die Schaltfläche 'Suche Gerät', wird die Gerätesuche gestartet. Alle Geräte welche sich im Anlern-Modus befinden werden hierdurch an das Gateway angelernt.  
 ![Konfigurator](../imgs/conf_configurator1.png)  
 
 Über die Schaltfläche 'Entferne Gerät' wird eine Liste mit allen im Gateway vorhandenen Geräten (Nodes) angezeigt.  
@@ -90,31 +90,15 @@ Sucht nach neuen Geräten und lernte Diese am Gateway an.
 ```php
 bool KLF200_RemoveNode(int $InstanzeID, int $Node);
 ```
-Entfernt das angelernte Gerät mit der in '$Node' übergebenen Nodeid aus dem Gateway.    
+Entfernt das angelernte Gerät mit der in '$Node' übergebenen NodeId aus dem Gateway.    
 
 ```php
 bool KLF200_RebootGateway(int $InstanzeID);
 ```
-Startet das Gatway KLF200 neu.  
+Startet das Gateway KLF200 neu.  
 
 
 ## 8. Lizenz
 
-### IPS-Modul:  
   [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)  
   
-### Submodules:  
-  **PHP-TLS**  
-  https://github.com/rnaga/PHP-TLS  
-    Copyright (c) 2016 Ryohei Nagatsuka    
-
-  **Pure PHP Elliptic Curve Cryptography Library**  
-  https://github.com/phpecc/phpecc  
-
-  **Assert**  
-  https://github.com/beberlei/assert  
-    Copyright (c) 2011-2013, Benjamin Eberlei, All rights reserved.  
-
-  **AES GCM (Galois Counter Mode) PHP Implementation**  
-  https://github.com/Spomky-Labs/php-aes-gcm  
-    Copyright (c) 2016 Spomky-Labs  

@@ -56,7 +56,7 @@ class KLF200Node extends IPSModule
         $this->SessionId = 1;
         $NodeId = $this->ReadPropertyInteger('NodeId');
         $this->NodeId = chr($NodeId);
-        if (($NodeId < 0) or ($NodeId > 255)) {
+        if (($NodeId < 0) || ($NodeId > 255)) {
             $Line = 'NOTHING';
         } else {
             $NodeId = preg_quote(substr(json_encode(utf8_encode(chr($this->ReadPropertyInteger('NodeId')))), 0, -1));
@@ -81,6 +81,313 @@ class KLF200Node extends IPSModule
         $this->RegisterProfileBoolean('KLF200.Lock', 'Lock', '', '');
         if (IPS_GetKernelRunlevel() == KR_READY) {
             $this->RequestNodeInformation();
+        }
+    }
+
+    public function SwitchMode(bool $Value)
+    {
+        return $this->SetMainParameter($Value ? 0xC800 : 0x0000);
+    }
+
+    public function ShutterMove(int $Value)
+    {
+        switch ($this->NodeSubType) {
+            case 0x0040: //Interior Venetian Blind
+            case 0x0080: //Roller Shutter
+            case 0x0081: //Adjustable slats rolling shutter
+            case 0x0082: //Roller Shutter With projection
+            case 0x00C0: //Vertical Exterior Awning
+            case 0x0100: //Window opener
+            case 0x0101: //Window opener with integrated rain sensor
+            case 0x0140: //Garage door opener
+            case 0x017A: //Garage door opener
+            case 0x0200: //Rolling Door Opener
+            case 0x01C0: //Gate opener
+            case 0x01FA: //Gate opener
+            case 0x0280: //Vertical Interior Blinds
+            case 0x0340: //Dual Roller Shutter
+            case 0x0400: //Horizontal awning
+            case 0x04C0: //Curtain track
+            case 0x0600: //Swinging Shutters
+            case 0x0601: //Swinging Shutter with independent handling of the leaves
+            case 0x0440: //Exterior Venetian blind
+            case 0x0480: //Louver blind
+            case 0x0500: //Ventilation point
+            case 0x0501: //Air inlet
+            case 0x0502: //Air transfer
+            case 0x0503: //Air outlet
+                return $this->SetMainParameter($Value);
+        }
+        trigger_error($this->Translate('Instance does not implement this function'), E_USER_NOTICE);
+        return false;
+    }
+
+    public function ShutterMoveUp()
+    {
+        return $this->SetMainParameter(0x0000);
+    }
+
+    public function ShutterMoveDown()
+    {
+        return $this->SetMainParameter(0xC800);
+    }
+
+    public function ShutterMoveStop()
+    {
+        return $this->SetMainParameter(0xD200);
+    }
+
+    public function OrientationSet(int $Value)
+    {
+        switch ($this->NodeSubType) {
+            case 0x0040:
+                return $this->SetFunctionParameter1($Value);
+            case 0x0440:
+            case 0x0081:
+            case 0x0480:
+                return $this->SetFunctionParameter3($Value);
+        }
+        trigger_error($this->Translate('Instance does not implement this function'), E_USER_NOTICE);
+        return false;
+    }
+
+    public function OrientationUp()
+    {
+        return $this->SetOrientation(0x0000);
+    }
+
+    public function OrientationDown()
+    {
+        return $this->SetOrientation(0xC800);
+    }
+
+    public function OrientationStop()
+    {
+        return $this->SetOrientation(0xD200);
+    }
+
+    public function DimSet(int $Value)
+    {
+        switch ($this->NodeSubType) {
+            case 0x0180: //Light
+            case 0x0540: //Exterior heating
+            case 0x057A: //Exterior heating
+                return $this->SetMainParameter($Value);
+        }
+        trigger_error($this->Translate('Instance does not implement this function'), E_USER_NOTICE);
+        return false;
+    }
+
+    public function DimUp()
+    {
+        return $this->DimSet(0x0000);
+    }
+
+    public function DimDown()
+    {
+        return $this->DimSet(0xC800);
+    }
+
+    public function DimStop()
+    {
+        return $this->DimSet(0xD200);
+    }
+
+    public function RequestAction($Ident, $Value)
+    {
+        if (IPS_GetVariable($this->GetIDForIdent($Ident))['VariableType'] == VARIABLETYPE_BOOLEAN) {
+            $Value = $Value ? 0xC800 : 0x0000;
+        }
+        switch ($Ident) {
+            case 'MAIN':
+                return $this->SetMainParameter($Value);
+            case 'FP1':
+                return $this->SetFunctionParameter1($Value);
+            case 'FP2':
+                return $this->SetFunctionParameter2($Value);
+            case 'FP3':
+                return $this->SetFunctionParameter3($Value);
+        }
+        echo $this->Translate('Invalid Ident');
+        return;
+    }
+
+    public function RequestNodeInformation()
+    {
+        $APIData = new \KLF200\APIData(\KLF200\APICommand::GET_NODE_INFORMATION_REQ, $this->NodeId);
+        $ResultAPIData = $this->SendAPIData($APIData);
+        if ($ResultAPIData === null) {
+            return false;
+        }
+        $State = ord($ResultAPIData->Data[0]);
+        switch ($State) {
+            case 0:
+                return true;
+            case 1:
+                trigger_error($this->Translate('Request rejected'), E_USER_NOTICE);
+                return false;
+            case 2:
+                trigger_error($this->Translate('Invalid node index'), E_USER_NOTICE);
+                return false;
+        }
+    }
+
+    public function RequestStatus()
+    {
+        /*
+          Command               Data 1 – 2 Data 3          Data 4 – 23   Data 24
+          GW_STATUS_REQUEST_REQ SessionID  IndexArrayCount IndexArray    StatusType
+          Data 25    Data 26
+          FPI1       FPI2
+          StatusType
+          value     |Description
+          0       |Request Target position
+          1       |Request Current position
+          2       |Request Remaining time
+          3       |Request Main info.
+         */
+        $Data = $this->NodeId . $this->GetSessionId() . chr(1) . $this->NodeId . "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
+        $Data .= chr(1) . chr(0b11100000) . chr(0);
+        $APIData = new \KLF200\APIData(\KLF200\APICommand::STATUS_REQUEST_REQ, $Data);
+        $ResultAPIData = $this->SendAPIData($APIData);
+        if ($ResultAPIData === null) {
+            return false;
+        }
+        return ord($ResultAPIData->Data[2]) == 1;
+    }
+
+    public function SetMainParameter(int $Value)
+    {
+        /*
+          Command               Data 1 – 2  Data 3              Data 4          Data 5
+          GW_COMMAND_SEND_REQ   SessionID   CommandOriginator   PriorityLevel   ParameterActive
+          Data 6    Data 7  Data 8 - 41                     Data 42         Data 43 – 62    Data 63
+          FPI1      FPI2    FunctionalParameterValueArray   IndexArrayCount IndexArray      PriorityLevelLock
+          Data 64   Data 65 Data 66
+          PL_0_3    PL_4_7  LockTime
+         */
+        $Data = $this->NodeId . $this->GetSessionId(); //Data 1-2
+        $Data .= chr(1) . chr(3) . chr(0); // Data 3-5
+        $Data .= chr(0) . chr(0); // Data 6-7
+        $Data .= pack('n', $Value); // Data 8-9
+        $Data .= "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"; // Data 10-25
+        $Data .= "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"; // Data 26-41
+        $Data .= chr(1) . $this->NodeId . "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"; //Data 42-62
+        $Data .= chr(0); // Data 63
+        $Data .= chr(0) . chr(0) . chr(0); // Data 64-66
+        $APIData = new \KLF200\APIData(\KLF200\APICommand::COMMAND_SEND_REQ, $Data);
+        $ResultAPIData = $this->SendAPIData($APIData);
+        if ($ResultAPIData === null) {
+            return false;
+        }
+        return ord($ResultAPIData->Data[2]) == 1;
+    }
+
+    public function SetFunctionParameter1(int $Value)
+    {
+        /*
+          Command               Data 1 – 2  Data 3              Data 4          Data 5
+          GW_COMMAND_SEND_REQ   SessionID   CommandOriginator   PriorityLevel   ParameterActive
+          Data 6    Data 7  Data 8 - 41                     Data 42         Data 43 – 62    Data 63
+          FPI1      FPI2    FunctionalParameterValueArray   IndexArrayCount IndexArray      PriorityLevelLock
+          Data 64   Data 65 Data 66
+          PL_0_3    PL_4_7  LockTime
+         */
+        $Data = $this->NodeId . $this->GetSessionId(); //Data 1-2
+        $Data .= chr(1) . chr(3) . chr(0); // Data 3-5
+        $Data .= chr(0x80) . chr(0); // Data 6-7
+        $Data .= "\xD4\x00"; // Data 8-9 -> ignore
+        $Data .= pack('n', $Value); // Data 10-11
+        $Data .= "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"; // Data 12-25
+        $Data .= "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"; // Data 26-41
+        $Data .= chr(1) . $this->NodeId . "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"; //Data 42-62
+        $Data .= chr(0); // Data 63
+        $Data .= chr(0) . chr(0) . chr(0); // Data 64-66
+        $APIData = new \KLF200\APIData(\KLF200\APICommand::COMMAND_SEND_REQ, $Data);
+        $ResultAPIData = $this->SendAPIData($APIData);
+        if ($ResultAPIData === null) {
+            return false;
+        }
+        return ord($ResultAPIData->Data[2]) == 1;
+    }
+
+    public function SetFunctionParameter2(int $Value)
+    {
+        /*
+          Command               Data 1 – 2  Data 3              Data 4          Data 5
+          GW_COMMAND_SEND_REQ   SessionID   CommandOriginator   PriorityLevel   ParameterActive
+          Data 6    Data 7  Data 8 - 41                     Data 42         Data 43 – 62    Data 63
+          FPI1      FPI2    FunctionalParameterValueArray   IndexArrayCount IndexArray      PriorityLevelLock
+          Data 64   Data 65 Data 66
+          PL_0_3    PL_4_7  LockTime
+         */
+        $Data = $this->NodeId . $this->GetSessionId(); //Data 1-2
+        $Data .= chr(1) . chr(3) . chr(0); // Data 3-5
+        $Data .= chr(0x40) . chr(0); // Data 6-7
+        $Data .= "\xD4\x00"; // Data 8-9 -> ignore
+        $Data .= "\x00\x00"; // Data 10-11
+        $Data .= pack('n', $Value); // Data 12-13
+        $Data .= "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"; // Data 14-25
+        $Data .= "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"; // Data 26-41
+        $Data .= chr(1) . $this->NodeId . "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"; //Data 42-62
+        $Data .= chr(0); // Data 63
+        $Data .= chr(0) . chr(0) . chr(0); // Data 64-66
+        $APIData = new \KLF200\APIData(\KLF200\APICommand::COMMAND_SEND_REQ, $Data);
+        $ResultAPIData = $this->SendAPIData($APIData);
+        if ($ResultAPIData === null) {
+            return false;
+        }
+        return ord($ResultAPIData->Data[2]) == 1;
+    }
+
+    public function SetFunctionParameter3(int $Value)
+    {
+        /*
+          Command               Data 1 – 2  Data 3              Data 4          Data 5
+          GW_COMMAND_SEND_REQ   SessionID   CommandOriginator   PriorityLevel   ParameterActive
+          Data 6    Data 7  Data 8 - 41                     Data 42         Data 43 – 62    Data 63
+          FPI1      FPI2    FunctionalParameterValueArray   IndexArrayCount IndexArray      PriorityLevelLock
+          Data 64   Data 65 Data 66
+          PL_0_3    PL_4_7  LockTime
+         */
+        $Data = $this->NodeId . $this->GetSessionId(); //Data 1-2
+        $Data .= chr(1) . chr(3) . chr(0); // Data 3-5
+        $Data .= chr(0x20) . chr(0); // Data 6-7
+        $Data .= "\xD4\x00"; // Data 8-9 -> ignore
+        $Data .= "\x00\x00\x00\x00"; // Data 10-14
+        $Data .= pack('n', $Value); // Data 14-15
+        $Data .= "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"; // Data 16-25
+        $Data .= "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"; // Data 26-41
+        $Data .= chr(1) . $this->NodeId . "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"; //Data 42-62
+        $Data .= chr(0); // Data 63
+        $Data .= chr(0) . chr(0) . chr(0); // Data 64-66
+        $APIData = new \KLF200\APIData(\KLF200\APICommand::COMMAND_SEND_REQ, $Data);
+        $ResultAPIData = $this->SendAPIData($APIData);
+        if ($ResultAPIData === null) {
+            return false;
+        }
+        return ord($ResultAPIData->Data[2]) == 1;
+    }
+
+    public function ReceiveData($JSONString)
+    {
+        $APIData = new \KLF200\APIData($JSONString);
+        $this->SendDebug('Event', $APIData, 1);
+        $this->ReceiveEvent($APIData);
+    }
+
+    protected function SendDebug($Message, $Data, $Format)
+    {
+        if (is_a($Data, '\\KLF200\\APIData')) {
+            /* @var $Data \KLF200\APIData */
+            $this->SendDebug2($Message . ':Command', \KLF200\APICommand::ToString($Data->Command), 0);
+            if ($Data->isError()) {
+                $this->SendDebug2('Error', $Data->ErrorToString(), 0);
+            } elseif ($Data->Data != '') {
+                $this->SendDebug2($Message . ':Data', $Data->Data, $Format);
+            }
+        } else {
+            $this->SendDebug2($Message, $Data, $Format);
         }
     }
 
@@ -238,161 +545,33 @@ class KLF200Node extends IPSModule
     {
         // nur absolute Werte in Variablen schreiben
         $Main = @$this->GetIDForIdent('MAIN');
-        if (($Main > 0) and ($CurrentPosition <= 0xC800)) {
+        if (($Main > 0) && ($CurrentPosition <= 0xC800)) {
             if (IPS_GetVariable($Main)['VariableType'] == VARIABLETYPE_BOOLEAN) {
                 $CurrentPosition = ($CurrentPosition == 0xC800);
             }
             $this->SetValue('MAIN', $CurrentPosition);
         }
         $FP1 = @$this->GetIDForIdent('FP1');
-        if (($FP1 > 0) and ($FP1CurrentPosition <= 0xC800)) {
+        if (($FP1 > 0) && ($FP1CurrentPosition <= 0xC800)) {
             if (IPS_GetVariable($FP1)['VariableType'] == VARIABLETYPE_BOOLEAN) {
                 $FP1CurrentPosition = ($FP1CurrentPosition == 0xC800);
             }
             $this->SetValue('FP1', $FP1CurrentPosition);
         }
         $FP2 = @$this->GetIDForIdent('FP2');
-        if (($FP2 > 0) and ($FP2CurrentPosition <= 0xC800)) {
+        if (($FP2 > 0) && ($FP2CurrentPosition <= 0xC800)) {
             if (IPS_GetVariable($FP2)['VariableType'] == VARIABLETYPE_BOOLEAN) {
                 $FP2CurrentPosition = ($FP2CurrentPosition == 0xC800);
             }
             $this->SetValue('FP2', $FP2CurrentPosition);
         }
         $FP3 = @$this->GetIDForIdent('FP3');
-        if (($FP3 > 0) and ($FP3CurrentPosition <= 0xC800)) {
+        if (($FP3 > 0) && ($FP3CurrentPosition <= 0xC800)) {
             if (IPS_GetVariable($FP3)['VariableType'] == VARIABLETYPE_BOOLEAN) {
                 $FP3CurrentPosition = ($FP3CurrentPosition == 0xC800);
             }
             $this->SetValue('FP3', $FP3CurrentPosition);
         }
-    }
-
-    public function SwitchMode(bool $Value)
-    {
-        return $this->SetMainParameter($Value ? 0xC800 : 0x0000);
-    }
-
-    public function ShutterMove(int $Value)
-    {
-        switch ($this->NodeSubType) {
-            case 0x0040: //Interior Venetian Blind
-            case 0x0080: //Roller Shutter
-            case 0x0081: //Adjustable slats rolling shutter
-            case 0x0082: //Roller Shutter With projection
-            case 0x00C0: //Vertical Exterior Awning
-            case 0x0100: //Window opener
-            case 0x0101: //Window opener with integrated rain sensor
-            case 0x0140: //Garage door opener
-            case 0x017A: //Garage door opener
-            case 0x0200: //Rolling Door Opener
-            case 0x01C0: //Gate opener
-            case 0x01FA: //Gate opener
-            case 0x0280: //Vertical Interior Blinds
-            case 0x0340: //Dual Roller Shutter
-            case 0x0400: //Horizontal awning
-            case 0x04C0: //Curtain track
-            case 0x0600: //Swinging Shutters
-            case 0x0601: //Swinging Shutter with independent handling of the leaves
-            case 0x0440: //Exterior Venetian blind
-            case 0x0480: //Louver blind
-            case 0x0500: //Ventilation point
-            case 0x0501: //Air inlet
-            case 0x0502: //Air transfer
-            case 0x0503: //Air outlet
-                return $this->SetMainParameter($Value);
-        }
-        trigger_error($this->Translate('Instance does not implement this function'), E_USER_NOTICE);
-        return false;
-    }
-
-    public function ShutterMoveUp()
-    {
-        return $this->SetMainParameter(0x0000);
-    }
-
-    public function ShutterMoveDown()
-    {
-        return $this->SetMainParameter(0xC800);
-    }
-
-    public function ShutterMoveStop()
-    {
-        return $this->SetMainParameter(0xD200);
-    }
-
-    public function OrientationSet(int $Value)
-    {
-        switch ($this->NodeSubType) {
-            case 0x0040:
-                return $this->SetFunctionParameter1($Value);
-            case 0x0440:
-            case 0x0081:
-            case 0x0480:
-                return $this->SetFunctionParameter3($Value);
-        }
-        trigger_error($this->Translate('Instance does not implement this function'), E_USER_NOTICE);
-        return false;
-    }
-
-    public function OrientationUp()
-    {
-        return $this->SetOrientation(0x0000);
-    }
-
-    public function OrientationDown()
-    {
-        return $this->SetOrientation(0xC800);
-    }
-
-    public function OrientationStop()
-    {
-        return $this->SetOrientation(0xD200);
-    }
-
-    public function DimSet(int $Value)
-    {
-        switch ($this->NodeSubType) {
-            case 0x0180: //Light
-            case 0x0540: //Exterior heating
-            case 0x057A: //Exterior heating
-                return $this->SetMainParameter($Value);
-        }
-        trigger_error($this->Translate('Instance does not implement this function'), E_USER_NOTICE);
-        return false;
-    }
-
-    public function DimUp()
-    {
-        return $this->DimSet(0x0000);
-    }
-
-    public function DimDown()
-    {
-        return $this->DimSet(0xC800);
-    }
-
-    public function DimStop()
-    {
-        return $this->DimSet(0xD200);
-    }
-
-    public function RequestAction($Ident, $Value)
-    {
-        if (IPS_GetVariable($this->GetIDForIdent($Ident))['VariableType'] == VARIABLETYPE_BOOLEAN) {
-            $Value = $Value ? 0xC800 : 0x0000;
-        }
-        switch ($Ident) {
-            case 'MAIN':
-                return $this->SetMainParameter($Value);
-            case 'FP1':
-                return $this->SetFunctionParameter1($Value);
-            case 'FP2':
-                return $this->SetFunctionParameter2($Value);
-            case 'FP3':
-                return $this->SetFunctionParameter3($Value);
-        }
-        echo $this->Translate('Invalid Ident');
-        return;
     }
 
     private function ReceiveEvent(\KLF200\APIData $APIData)
@@ -582,175 +761,11 @@ class KLF200Node extends IPSModule
         }
     }
 
-    public function RequestNodeInformation()
-    {
-        $APIData = new \KLF200\APIData(\KLF200\APICommand::GET_NODE_INFORMATION_REQ, $this->NodeId);
-        $ResultAPIData = $this->SendAPIData($APIData);
-        if ($ResultAPIData === null) {
-            return false;
-        }
-        $State = ord($ResultAPIData->Data[0]);
-        switch ($State) {
-            case 0:
-                return true;
-            case 1:
-                trigger_error($this->Translate('Request rejected'), E_USER_NOTICE);
-                return false;
-            case 2:
-                trigger_error($this->Translate('Invalid node index'), E_USER_NOTICE);
-                return false;
-        }
-    }
-
     private function GetSessionId()
     {
         $SessionId = ($this->SessionId + 1) & 0xff;
         $this->SessionId = $SessionId;
         return chr($SessionId);
-    }
-
-    public function RequestStatus()
-    {
-        /*
-          Command               Data 1 – 2 Data 3          Data 4 – 23   Data 24
-          GW_STATUS_REQUEST_REQ SessionID  IndexArrayCount IndexArray    StatusType
-          Data 25    Data 26
-          FPI1       FPI2
-          StatusType
-          value     |Description
-          0       |Request Target position
-          1       |Request Current position
-          2       |Request Remaining time
-          3       |Request Main info.
-         */
-        $Data = $this->NodeId . $this->GetSessionId() . chr(1) . $this->NodeId . "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
-        $Data .= chr(1) . chr(0b11100000) . chr(0);
-        $APIData = new \KLF200\APIData(\KLF200\APICommand::STATUS_REQUEST_REQ, $Data);
-        $ResultAPIData = $this->SendAPIData($APIData);
-        if ($ResultAPIData === null) {
-            return false;
-        }
-        return ord($ResultAPIData->Data[2]) == 1;
-    }
-
-    public function SetMainParameter(int $Value)
-    {
-        /*
-          Command               Data 1 – 2  Data 3              Data 4          Data 5
-          GW_COMMAND_SEND_REQ   SessionID   CommandOriginator   PriorityLevel   ParameterActive
-          Data 6    Data 7  Data 8 - 41                     Data 42         Data 43 – 62    Data 63
-          FPI1      FPI2    FunctionalParameterValueArray   IndexArrayCount IndexArray      PriorityLevelLock
-          Data 64   Data 65 Data 66
-          PL_0_3    PL_4_7  LockTime
-         */
-        $Data = $this->NodeId . $this->GetSessionId(); //Data 1-2
-        $Data .= chr(1) . chr(3) . chr(0); // Data 3-5
-        $Data .= chr(0) . chr(0); // Data 6-7
-        $Data .= pack('n', $Value); // Data 8-9
-        $Data .= "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"; // Data 10-25
-        $Data .= "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"; // Data 26-41
-        $Data .= chr(1) . $this->NodeId . "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"; //Data 42-62
-        $Data .= chr(0); // Data 63
-        $Data .= chr(0) . chr(0) . chr(0); // Data 64-66
-        $APIData = new \KLF200\APIData(\KLF200\APICommand::COMMAND_SEND_REQ, $Data);
-        $ResultAPIData = $this->SendAPIData($APIData);
-        if ($ResultAPIData === null) {
-            return false;
-        }
-        return ord($ResultAPIData->Data[2]) == 1;
-    }
-
-    public function SetFunctionParameter1(int $Value)
-    {
-        /*
-          Command               Data 1 – 2  Data 3              Data 4          Data 5
-          GW_COMMAND_SEND_REQ   SessionID   CommandOriginator   PriorityLevel   ParameterActive
-          Data 6    Data 7  Data 8 - 41                     Data 42         Data 43 – 62    Data 63
-          FPI1      FPI2    FunctionalParameterValueArray   IndexArrayCount IndexArray      PriorityLevelLock
-          Data 64   Data 65 Data 66
-          PL_0_3    PL_4_7  LockTime
-         */
-        $Data = $this->NodeId . $this->GetSessionId(); //Data 1-2
-        $Data .= chr(1) . chr(3) . chr(0); // Data 3-5
-        $Data .= chr(0x80) . chr(0); // Data 6-7
-        $Data .= "\xD4\x00"; // Data 8-9 -> ignore
-        $Data .= pack('n', $Value); // Data 10-11
-        $Data .= "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"; // Data 12-25
-        $Data .= "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"; // Data 26-41
-        $Data .= chr(1) . $this->NodeId . "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"; //Data 42-62
-        $Data .= chr(0); // Data 63
-        $Data .= chr(0) . chr(0) . chr(0); // Data 64-66
-        $APIData = new \KLF200\APIData(\KLF200\APICommand::COMMAND_SEND_REQ, $Data);
-        $ResultAPIData = $this->SendAPIData($APIData);
-        if ($ResultAPIData === null) {
-            return false;
-        }
-        return ord($ResultAPIData->Data[2]) == 1;
-    }
-
-    public function SetFunctionParameter2(int $Value)
-    {
-        /*
-          Command               Data 1 – 2  Data 3              Data 4          Data 5
-          GW_COMMAND_SEND_REQ   SessionID   CommandOriginator   PriorityLevel   ParameterActive
-          Data 6    Data 7  Data 8 - 41                     Data 42         Data 43 – 62    Data 63
-          FPI1      FPI2    FunctionalParameterValueArray   IndexArrayCount IndexArray      PriorityLevelLock
-          Data 64   Data 65 Data 66
-          PL_0_3    PL_4_7  LockTime
-         */
-        $Data = $this->NodeId . $this->GetSessionId(); //Data 1-2
-        $Data .= chr(1) . chr(3) . chr(0); // Data 3-5
-        $Data .= chr(0x40) . chr(0); // Data 6-7
-        $Data .= "\xD4\x00"; // Data 8-9 -> ignore
-        $Data .= "\x00\x00"; // Data 10-11
-        $Data .= pack('n', $Value); // Data 12-13
-        $Data .= "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"; // Data 14-25
-        $Data .= "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"; // Data 26-41
-        $Data .= chr(1) . $this->NodeId . "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"; //Data 42-62
-        $Data .= chr(0); // Data 63
-        $Data .= chr(0) . chr(0) . chr(0); // Data 64-66
-        $APIData = new \KLF200\APIData(\KLF200\APICommand::COMMAND_SEND_REQ, $Data);
-        $ResultAPIData = $this->SendAPIData($APIData);
-        if ($ResultAPIData === null) {
-            return false;
-        }
-        return ord($ResultAPIData->Data[2]) == 1;
-    }
-
-    public function SetFunctionParameter3(int $Value)
-    {
-        /*
-          Command               Data 1 – 2  Data 3              Data 4          Data 5
-          GW_COMMAND_SEND_REQ   SessionID   CommandOriginator   PriorityLevel   ParameterActive
-          Data 6    Data 7  Data 8 - 41                     Data 42         Data 43 – 62    Data 63
-          FPI1      FPI2    FunctionalParameterValueArray   IndexArrayCount IndexArray      PriorityLevelLock
-          Data 64   Data 65 Data 66
-          PL_0_3    PL_4_7  LockTime
-         */
-        $Data = $this->NodeId . $this->GetSessionId(); //Data 1-2
-        $Data .= chr(1) . chr(3) . chr(0); // Data 3-5
-        $Data .= chr(0x20) . chr(0); // Data 6-7
-        $Data .= "\xD4\x00"; // Data 8-9 -> ignore
-        $Data .= "\x00\x00\x00\x00"; // Data 10-14
-        $Data .= pack('n', $Value); // Data 14-15
-        $Data .= "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"; // Data 16-25
-        $Data .= "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"; // Data 26-41
-        $Data .= chr(1) . $this->NodeId . "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"; //Data 42-62
-        $Data .= chr(0); // Data 63
-        $Data .= chr(0) . chr(0) . chr(0); // Data 64-66
-        $APIData = new \KLF200\APIData(\KLF200\APICommand::COMMAND_SEND_REQ, $Data);
-        $ResultAPIData = $this->SendAPIData($APIData);
-        if ($ResultAPIData === null) {
-            return false;
-        }
-        return ord($ResultAPIData->Data[2]) == 1;
-    }
-
-    public function ReceiveData($JSONString)
-    {
-        $APIData = new \KLF200\APIData($JSONString);
-        $this->SendDebug('Event', $APIData, 1);
-        $this->ReceiveEvent($APIData);
     }
 
     private function SendAPIData(\KLF200\APIData $APIData)
@@ -776,21 +791,6 @@ class KLF200Node extends IPSModule
         } catch (Exception $exc) {
             $this->SendDebug('Error', $exc->getMessage(), 0);
             return null;
-        }
-    }
-
-    protected function SendDebug($Message, $Data, $Format)
-    {
-        if (is_a($Data, '\\KLF200\\APIData')) {
-            /* @var $Data \KLF200\APIData */
-            $this->SendDebug2($Message . ':Command', \KLF200\APICommand::ToString($Data->Command), 0);
-            if ($Data->isError()) {
-                $this->SendDebug2('Error', $Data->ErrorToString(), 0);
-            } elseif ($Data->Data != '') {
-                $this->SendDebug2($Message . ':Data', $Data->Data, $Format);
-            }
-        } else {
-            $this->SendDebug2($Message, $Data, $Format);
         }
     }
 }

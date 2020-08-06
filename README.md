@@ -1,5 +1,5 @@
 [![Version](https://img.shields.io/badge/Symcon-PHPModul-red.svg?style=flat-square)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
-[![Version](https://img.shields.io/badge/Modul%20Version-0.50-blue.svg?style=flat-square)]()
+[![Version](https://img.shields.io/badge/Modul%20Version-0.70-blue.svg?style=flat-square)]()
 [![Version](https://img.shields.io/badge/Symcon%20Version-5.5%20%3E-green.svg?style=flat-square)]()  
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg?style=flat-square)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 [![Check Style](https://github.com/Nall-chan/VeluxKLF200/workflows/Check%20Style/badge.svg)](https://github.com/Nall-chan/VeluxKLF200/actions) [![Run Tests](https://github.com/Nall-chan/VeluxKLF200/workflows/Run%20Tests/badge.svg)](https://github.com/Nall-chan/VeluxKLF200/actions)  
@@ -35,16 +35,14 @@ ermöglicht die Einbindung von allen io-homecontrol® Geräten, welche von diese
 
 ## 2. Voraussetzungen
 
- - IPS 5.2 (testing Release) oder neuer  
+ - IPS 5.5 (beta Release) oder neuer  
  - KLF200 io-homecontrol® Gateway  
     - KLF muss per LAN angeschlossen sein  
     - KLF Firmware 2.0.0.71 oder neuer   
 
 ## 3. Software-Installation
 
-**IPS 5.3:**  
-   Bei privater Nutzung:
-     Über den 'Module-Store' in IPS.  
+   Über den 'Module-Store' in IPS das Modul 'VELUX KLF200' hinzufügen.   
    **Bei kommerzieller Nutzung (z.B. als Errichter oder Integrator) wenden Sie sich bitte an den Autor.**  
 
 ## 4. Einrichten der Instanzen in IP-Symcon

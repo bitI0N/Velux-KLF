@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace KLF200;
 
-/* * @addtogroup oiii
+/* * @addtogroup klf200
  * @{
  *
- * @package       OII
+ * @package       KLF200
  * @author        Michael Tröger <micha@nall-chan.net>
- * @copyright     2018 Michael Tröger
+ * @copyright     2020 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  * @version       1.1
  * @example <b>Ohne</b>
@@ -89,7 +89,7 @@ class ErrorNTF
 {
     const NO_ERROR = -1;
     const NOT_DEFINED = 0; // Not further defined error.
-    const UNKNOW_COMMAND = 1; // Unknown Command or command is not accepted at this state.
+    const UNKNOWN_COMMAND = 1; // Unknown Command or command is not accepted at this state.
     const ERROR_ON_FRAME_STRUCTURE = 2; // ERROR on Frame Structure.
     const BUSY = 7; // Busy. Try again later.
     const BAD_SYSTEM_TABLE_INDEX = 8; // Bad system table index.
@@ -105,7 +105,7 @@ class ErrorNTF
                 return 'Timeout.';
             case self::NOT_DEFINED:
                 return 'Not further defined error.';
-            case self::UNKNOW_COMMAND:
+            case self::UNKNOWN_COMMAND:
                 return 'Unknown command or command is not accepted at this state.';
             case self::ERROR_ON_FRAME_STRUCTURE:
                 return 'Error on Frame Structure.';
@@ -127,7 +127,7 @@ class State
     const WAITING_FOR_POWER = 3;
     const EXECUTING = 4;
     const DONE = 5;
-    const UNKNOW = 255;
+    const UNKNOWN = 255;
 
     public static function ToString(int $State)
     {
@@ -144,10 +144,10 @@ class State
                 return 'Executing';
             case self::DONE:
                 return 'done';
-            case self::UNKNOW:
-                return 'unknow';
+            case self::UNKNOWN:
+                return 'unknown';
             default:
-                return 'unknow state value: 0x' . sprintf('%02X', $State);
+                return 'unknown state value: 0x' . sprintf('%02X', $State);
         }
     }
 }
@@ -385,7 +385,7 @@ class APICommand
     const DELETE_GROUP_REQ = 0x0225; //Delete a group.
     const DELETE_GROUP_CFM = 0x0226; //Acknowledge to DELETE_GROUP_INFORMATION_REQ.
     const NEW_GROUP_REQ = 0x0227; //Request new group to be created.
-    const NEW_GROUP_CFM = 0x0228; //
+    const NEW_GROUP_CFM = 0x0228;
     const GET_ALL_GROUPS_INFORMATION_REQ = 0x0229; //Request information about all defined groups.
     const GET_ALL_GROUPS_INFORMATION_CFM = 0x022A; //Acknowledge to GET_ALL_GROUPS_INFORMATION_REQ.
     const GET_ALL_GROUPS_INFORMATION_NTF = 0x022B; //Acknowledge to GET_ALL_GROUPS_INFORMATION_REQ.
@@ -473,7 +473,7 @@ class APICommand
     const PASSWORD_CHANGE_CFM = 0x3003; //Acknowledge to PASSWORD_CHANGE_REQ.
     const PASSWORD_CHANGE_NTF = 0x3004; //Acknowledge to PASSWORD_CHANGE_REQ. Broadcasted to all connected clients.
 
-    public static $NofifyCommand = [
+    public static $NotifyCommand = [
         self::CS_GET_SYSTEMTABLE_DATA_NTF,
         self::CS_DISCOVER_NODES_NTF,
         self::CS_CONTROLLER_COPY_NTF,
@@ -518,7 +518,7 @@ class APICommand
 
     public static function isEvent(int $APICommand)
     {
-        return in_array($APICommand, self::$NofifyCommand);
+        return in_array($APICommand, self::$NotifyCommand);
     }
 
     public static function ToString($APICommand)

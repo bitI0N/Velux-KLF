@@ -2,82 +2,12 @@
 
 declare(strict_types=1);
 
-namespace {
     require_once __DIR__ . '/../libs/KLF200Class.php';  // diverse Klassen
     eval('declare(strict_types=1);namespace KLF200Gateway {?>' . file_get_contents(__DIR__ . '/../libs/helper/BufferHelper.php') . '}');
     eval('declare(strict_types=1);namespace KLF200Gateway {?>' . file_get_contents(__DIR__ . '/../libs/helper/SemaphoreHelper.php') . '}');
     eval('declare(strict_types=1);namespace KLF200Gateway {?>' . file_get_contents(__DIR__ . '/../libs/helper/DebugHelper.php') . '}');
     eval('declare(strict_types=1);namespace KLF200Gateway {?>' . file_get_contents(__DIR__ . '/../libs/helper/ParentIOHelper.php') . '}');
     eval('declare(strict_types=1);namespace KLF200Gateway {?>' . file_get_contents(__DIR__ . '/../libs/helper/VariableHelper.php') . '}');
-    /*$autoloader = new \AutoloaderTLS('PTLS');
-    $autoloader->register();
-
-    class AutoloaderTLS
-    {
-        private $namespace;
-
-        public function __construct($namespace = null)
-        {
-            $this->namespace = $namespace;
-        }
-
-        public function register()
-        {
-            spl_autoload_register([$this, 'loadClass']);
-        }
-
-        public function loadClass($className)
-        {
-            $libpath = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'libs' . DIRECTORY_SEPARATOR;
-            $includes[] = $libpath . 'AESGCM' . DIRECTORY_SEPARATOR . 'src';
-            $includes[] = $libpath . 'assert' . DIRECTORY_SEPARATOR . 'lib';
-            $includes[] = $libpath . 'phpecc' . DIRECTORY_SEPARATOR . 'src';
-            $includes[] = $libpath . 'PHP-TLS' . DIRECTORY_SEPARATOR . 'src';
-            set_include_path(get_include_path() . PATH_SEPARATOR . implode(PATH_SEPARATOR, $includes));
-            $className = str_replace(['Mdanter\\Ecc\\', 'AESGCM\\', 'PTLS\\'], ['', '', ''], $className);
-            $file = str_replace('\\', DIRECTORY_SEPARATOR, $className) . '.php';
-            require_once $file;
-            restore_include_path();
-        }
-    }*/
-
-}
-/*
-namespace KLF200Gateway {
-
-    /**
-     * Der Status der Verbindung.
-     /
-    class TLSState
-    {
-        const unknow = 0;
-        const Connected = 3;
-        const init = 4;
-
-        /**
-         *  Liefert den Klartext zu einem Status.
-         *
-         * @param int $Code
-         *
-         * @return string
-         /
-        public static function ToString(int $Code)
-        {
-            switch ($Code) {
-                case self::unknow:
-                    return 'unknow';
-                case self::Connected:
-                    return 'Connected';
-                case self::init:
-                    return 'init';
-            }
-        }
-    }
-
-    //require_once __DIR__ . '/../libs/loadTLS.php';
-}
-*/
-namespace {
 
     /*
      * @addtogroup klf200
@@ -86,7 +16,7 @@ namespace {
      * @package       KLF200
      * @file          module.php
      * @author        Michael Tröger <micha@nall-chan.net>
-     * @copyright     2019 Michael Tröger
+     * @copyright     2020 Michael Tröger
      * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
      * @version       1.0
      */
@@ -96,7 +26,7 @@ namespace {
      * Erweitert IPSModule.
      *
      * @author        Michael Tröger <micha@nall-chan.net>
-     * @copyright     2019 Michael Tröger
+     * @copyright     2020 Michael Tröger
      * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
      *
      * @version       1.0
@@ -104,14 +34,9 @@ namespace {
      * @example <b>Ohne</b>
      *
      * @property string $Host
-     * @property \KLF200Gateway\TLSState $State
-     * @property string $WaitForTLSReceive
-     * @property TLS $Multi_TLS
-     * @property string $TLSReceiveData
-     * @property string $TLSReceiveBuffer
      * @property string $ReceiveBuffer
      * @property APIData $ReceiveAPIData
-     * @property array $ReplyAPIData
+     * @property APIData $ReplyAPIData
      * @property array $Nodes
      * @property int $WaitForNodes
      * @property int $SessionId
@@ -139,11 +64,8 @@ namespace {
             $this->RegisterPropertyString('Password', '');
             $this->RegisterTimer('KeepAlive', 0, 'KLF200_ReadGatewayState($_IPS[\'TARGET\']);');
             $this->Host = '';
-      //      $this->TLSState = \KLF200Gateway\TLSState::unknow;
-      //      $this->TLSReceiveBuffer = '';
-      //      $this->WaitForTLSReceive = false;
             $this->ReceiveBuffer = '';
-            $this->ReplyAPIData = [];
+            $this->ReplyAPIData = new \KLF200\APIData('');
             $this->Nodes = [];
             $this->SessionId = 1;
         }
@@ -165,55 +87,6 @@ namespace {
             }
         }
 
-        /**
-         * Wird ausgeführt wenn der Kernel hochgefahren wurde.
-         */
-        protected function KernelReady()
-        {
-            $this->RegisterParent();
-        }
-
-        protected function RegisterParent()
-        {
-            $IOId = $this->IORegisterParent();
-            if ($IOId > 0) {
-                $this->Host = IPS_GetProperty($this->ParentID, 'Host');
-                $this->SetSummary(IPS_GetProperty($IOId, 'Host'));
-            } else {
-                $this->Host = '';
-                $this->SetSummary(('none'));
-            }
-            return $IOId;
-        }
-
-        /**
-         * Wird über den Trait InstanceStatus ausgeführt wenn sich der Status des Parent ändert.
-         * Oder wenn sich die Zuordnung zum Parent ändert.
-         *
-         * @param int $State Der neue Status des Parent.
-         */
-        protected function IOChangeState($State)
-        {
-            if ($State == IS_ACTIVE) {
-                if ($this->Connect()) {
-                    $this->SetTimerInterval('KeepAlive', 600000);
-                    $this->LogMessage('Successfully connected to KLF200.', KL_NOTIFY);
-                    $this->SessionId = 1;
-                    $this->RequestProtocolVersion();
-                    $this->SetGatewayTime();
-                    $this->ReadGatewayState();
-                    $this->RequestGatewayVersion();
-                    $this->SetHouseStatusMonitor();
-                } else {
-                    $this->SetTimerInterval('KeepAlive', 0);
-                }
-            } else {
-                $this->SetTimerInterval('KeepAlive', 0);
-                $this->SetStatus(IS_INACTIVE);
-           //     $this->TLSState = \KLF200Gateway\TLSState::unknow;
-            }
-        }
-
         public function RequestAction($Ident, $Value)
         {
             if ($this->IORequestAction($Ident, $Value)) {
@@ -227,11 +100,11 @@ namespace {
          */
         public function GetConfigurationForParent()
         {
-            $Config= [
-                'Port' => 51200,
-            'UseSSL'=>true,
-            'VerifyPeer'=>false,
-            'VerifyHost'=>true
+            $Config = [
+                'Port'      => 51200,
+                'UseSSL'    => true,
+                'VerifyPeer'=> false,
+                'VerifyHost'=> true
             ];
             return json_encode($Config);
         }
@@ -273,23 +146,12 @@ namespace {
             if (IPS_GetKernelRunlevel() != KR_READY) {
                 return;
             }
-
-            /*$OldState = $this->TLSState;
-
-            if ($OldState == \KLF200Gateway\TLSState::init) {
-                return;
-            }*/
-
-            //$this->TLSReceiveBuffer = '';
-            //$this->TLSState = \KLF200Gateway\TLSState::unknow;
-            //$this->WaitForTLSReceive = false;
             $this->ReceiveBuffer = '';
             $this->ReplyAPIData = [];
             $this->Nodes = [];
             $this->RegisterParent();
             if ($this->HasActiveParent()) {
                 $this->IOChangeState(IS_ACTIVE);
-                //IPS_ApplyChanges($this->ParentID);
             }
         }
 
@@ -384,6 +246,101 @@ namespace {
             return $Result;
         }
 
+        //################# DATAPOINTS CHILDREN
+
+        /**
+         * Interne Funktion des SDK. Nimmt Daten von Children entgegen und sendet Diese weiter.
+         *
+         * @param string $JSONString
+         * @result bool true wenn Daten gesendet werden konnten, sonst false.
+         */
+        public function ForwardData($JSONString)
+        {
+            if ($this->GetStatus() != IS_ACTIVE) {
+                return serialize(new \KLF200\APIData(\KLF200\APICommand::ERROR_NTF, chr(\KLF200\ErrorNTF::TIMEOUT)));
+            }
+            $APIData = new \KLF200\APIData($JSONString);
+            $result = @$this->SendAPIData($APIData);
+            return serialize($result);
+        }
+
+        //################# DATAPOINTS PARENT
+
+        /**
+         * Empfängt Daten vom Parent.
+         *
+         * @param string $JSONString Das empfangene JSON-kodierte Objekt vom Parent.
+         * @result bool True wenn Daten verarbeitet wurden, sonst false.
+         */
+        public function ReceiveData($JSONString)
+        {
+            $data = json_decode($JSONString);
+            $this->DecodeSLIPData(utf8_decode($data->Buffer));
+        }
+
+        /**
+         * Wird ausgeführt wenn der Kernel hochgefahren wurde.
+         */
+        protected function KernelReady()
+        {
+            $this->RegisterParent();
+        }
+
+        protected function RegisterParent()
+        {
+            $IOId = $this->IORegisterParent();
+            if ($IOId > 0) {
+                $this->Host = IPS_GetProperty($this->ParentID, 'Host');
+                $this->SetSummary(IPS_GetProperty($IOId, 'Host'));
+            } else {
+                $this->Host = '';
+                $this->SetSummary(('none'));
+            }
+            return $IOId;
+        }
+
+        /**
+         * Wird über den Trait InstanceStatus ausgeführt wenn sich der Status des Parent ändert.
+         * Oder wenn sich die Zuordnung zum Parent ändert.
+         *
+         * @param int $State Der neue Status des Parent.
+         */
+        protected function IOChangeState($State)
+        {
+            if ($State == IS_ACTIVE) {
+                if ($this->Connect()) {
+                    $this->SetTimerInterval('KeepAlive', 600000);
+                    $this->LogMessage('Successfully connected to KLF200.', KL_NOTIFY);
+                    $this->SessionId = 1;
+                    $this->RequestProtocolVersion();
+                    $this->SetGatewayTime();
+                    $this->ReadGatewayState();
+                    $this->RequestGatewayVersion();
+                    $this->SetHouseStatusMonitor();
+                } else {
+                    $this->SetTimerInterval('KeepAlive', 0);
+                }
+            } else {
+                $this->SetTimerInterval('KeepAlive', 0);
+                $this->SetStatus(IS_INACTIVE);
+            }
+        }
+
+        protected function SendDebug($Message, $Data, $Format)
+        {
+            if (is_a($Data, '\\KLF200\\APIData')) {
+                /* @var $Data \KLF200\APIData */
+                $this->SendDebug2($Message . ':Command', \KLF200\APICommand::ToString($Data->Command), 0);
+                if ($Data->isError()) {
+                    $this->SendDebug2('Error', $Data->ErrorToString(), 0);
+                } elseif ($Data->Data != '') {
+                    $this->SendDebug2($Message . ':Data', $Data->Data, $Format);
+                }
+            } else {
+                $this->SendDebug2($Message, $Data, $Format);
+            }
+        }
+
         /* public function RebootGateway()
           {
           $APIData = new \KLF200\APIData(\KLF200\APICommand::REBOOT_REQ);
@@ -397,7 +354,7 @@ namespace {
           $APIData = new \KLF200\APIData(\KLF200\APICommand::CS_GET_SYSTEMTABLE_DATA_REQ);
           $ResultAPIData = $this->SendAPIData($APIData);
           //$this->lock('SendAPIData');
-          // wait for finisch
+          // wait for finish
           // 01 00 3A DC 1C 03 C0 1C 01 00 00 00 00
           //$this->unlock('SendAPIData');
           }
@@ -418,29 +375,20 @@ namespace {
         //################# PRIVATE
         private function ReceiveEvent(\KLF200\APIData $APIData)
         {
-            $this->SendDataToChilds($APIData);
+            $this->SendAPIDataToChildren($APIData);
         }
 
         private function Connect()
         {
             if (strlen($this->ReadPropertyString('Password')) > 31) {
                 $this->SetStatus(IS_EBASE + 4);
-                //$this->TLSState = \KLF200Gateway\TLSState::unknow;
                 return false;
             }
-            /*$Result = $this->CreateConnection();
-            if ($Result === false) {
-                $this->SetStatus(IS_EBASE + 2);
-                $this->TLSState = \KLF200Gateway\TLSState::unknow;
-                $this->LogMessage('Error in TLS handshake.', KL_ERROR);
-                return false;
-            }*/
 
             $APIData = new \KLF200\APIData(\KLF200\APICommand::PASSWORD_ENTER_REQ, str_pad($this->ReadPropertyString('Password'), 32, "\x00"));
             $ResultAPIData = $this->SendAPIData($APIData, false);
             if ($ResultAPIData === false) {
                 $this->SetStatus(IS_EBASE + 2);
-                //$this->TLSState = \KLF200Gateway\TLSState::unknow;
                 return false;
             }
             if ($ResultAPIData->Data != "\x00") {
@@ -449,134 +397,19 @@ namespace {
                 $this->LogMessage('Access denied', KL_ERROR);
                 return false;
             }
-            $this->SendDebug('Login sucessfully', '', 0);
+            $this->SendDebug('Login successfully', '', 0);
             $this->SetStatus(IS_ACTIVE);
             return true;
         }
 
         /**
-         * Baut eine TLS Verbindung auf.
-         *
-         * @return bool True wenn der TLS Handshake erfolgreich war.
-         */
-  /*      private function CreateConnection()
-        {
-            $this->SendDebug('CreateConnection', '', 0);
-
-            try {
-                $TLSconfig = \PTLS\TLSContext::getClientConfig([]);
-                $TLS = \PTLS\TLSContext::createTLS($TLSconfig);
-                if (!$this->TLSHandshake($TLS)) {
-                    return false;
-                }
-                $this->TLSState = \KLF200Gateway\TLSState::Connected;
-                $this->SendDebug('TLS ProtocolVersion', $TLS->getDebug()->getProtocolVersion(), 0);
-                $UsingCipherSuite = explode("\n", $TLS->getDebug()->getUsingCipherSuite());
-                unset($UsingCipherSuite[0]);
-                foreach ($UsingCipherSuite as $Line) {
-                    $this->SendDebug(trim(substr($Line, 0, 14)), trim(substr($Line, 15)), 0);
-                }
-                $this->Multi_TLS = $TLS;
-            } catch (Exception $exc) {
-                $this->SendDebug('Error', $exc->getMessage(), 0);
-                trigger_error($exc->getMessage(), E_USER_NOTICE);
-                return false;
-            }
-            return true;
-        }
-*/
-        //################# DATAPOINTS CHILDS
-
-        /**
-         * Interne Funktion des SDK. Nimmt Daten von Childs entgegen und sendet Diese weiter.
-         *
-         * @param string $JSONString
-         * @result bool true wenn Daten gesendet werden konnten, sonst false.
-         */
-        public function ForwardData($JSONString)
-        {
-          //  if ($this->TLSState != \KLF200Gateway\TLSState::Connected) {
-              if ($this->GetStatus() != IS_ACTIVE){
-                return serialize(new \KLF200\APIData(\KLF200\APICommand::ERROR_NTF, chr(\KLF200\ErrorNTF::TIMEOUT)));
-            }
-            $APIData = new \KLF200\APIData($JSONString);
-            $result = @$this->SendAPIData($APIData);
-            return serialize($result);
-        }
-
-        /**
-         * Sendet die Events an die Childs.
+         * Sendet die Events an die Children.
          *
          * @param \KLF200\APIData $APIData
          */
-        private function SendDataToChilds(\KLF200\APIData $APIData)
+        private function SendAPIDataToChildren(\KLF200\APIData $APIData)
         {
             $this->SendDataToChildren($APIData->ToJSON('{5242DAEF-EEBD-441F-AB0B-E83C01475B65}'));
-        }
-
-        //################# DATAPOINTS PARENT
-
-        /**
-         * Empfängt Daten vom Parent.
-         *
-         * @param string $JSONString Das empfangene JSON-kodierte Objekt vom Parent.
-         * @result bool True wenn Daten verarbeitet wurden, sonst false.
-         */
-        public function ReceiveData($JSONString)
-        {
-            $data = json_decode($JSONString);
-            $this->DecodeSLIPData(utf8_decode($data->Buffer));
-            /*
-            $Data = $this->TLSReceiveBuffer . utf8_decode($data->Buffer);
-            if ((ord($Data[0]) >= 0x14) && (ord($Data[0]) <= 0x18) && (substr($Data, 1, 2) == "\x03\x03")) {
-                $TLSData = $Data;
-                $Data = '';
-                while (strlen($TLSData) > 0) {
-                    $len = unpack('n', substr($TLSData, 3, 2))[1] + 5;
-                    if (strlen($TLSData) >= $len) {
-                        $Part = substr($TLSData, 0, $len);
-                        $TLSData = substr($TLSData, $len);
-                        if ($this->TLSState == \KLF200Gateway\TLSState::init) {
-                            if (!$this->WriteTLSReceiveData($Part)) {
-                                break;
-                            }
-                        } elseif ($this->TLSState == \KLF200Gateway\TLSState::Connected) {
-                            try {
-                                $TLS = $this->GetTLSContext();
-                                $TLS->encode($Part);
-                                $SLIPData = $TLS->input();
-                                $this->SetTLSContext($TLS);
-                                $this->DecodeSLIPData($SLIPData);
-                            } catch (\PTLS\Exceptions\TLSAlertException $e) {
-                                $this->SendDebug('Error', $e->getMessage(), 0);
-                                $out = $e->decode();
-                                if (($out !== null) and (strlen($out) > 0)) {
-                                    $JSON['DataID'] = '{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}';
-                                    $JSON['Buffer'] = utf8_encode($out);
-                                    $JsonString = json_encode($JSON);
-                                    parent::SendDataToParent($JsonString);
-                                }
-                                trigger_error($e->getMessage(), E_USER_NOTICE);
-                                $this->TLSState = \KLF200Gateway\TLSState::unknow;
-                                $this->TLSReceiveBuffer = '';
-                                return;
-                            }
-                        }
-                    } else {
-                        break;
-                    }
-                }
-                if (strlen($TLSData) == 0) {
-                    $this->TLSReceiveBuffer = '';
-                } else {
-                    //$this->SendDebug('Receive TLS Part', $TLSData, 0);
-                    $this->TLSReceiveBuffer = $TLSData;
-                }
-            } else { // Anfang (inkl. Buffer) paßt nicht
-                $this->TLSReceiveBuffer = '';
-                return;
-            }
-            */
         }
 
         private function DecodeSLIPData($SLIPData)
@@ -649,70 +482,7 @@ namespace {
         }
 
         //################# SENDQUEUE
-/*
-        private function TLSHandshake(&$TLS)
-        {
-            $this->TLSState = \KLF200Gateway\TLSState::init;
-            $this->SendDebug('TLS start', '', 0);
-            $loop = 1;
-            $SendData = $TLS->decode();
-            $this->SendDebug('Send TLS Handshake ' . $loop, $SendData, 0);
-            $JSON['DataID'] = '{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}';
-            $JSON['Buffer'] = utf8_encode($SendData);
-            $JsonString = json_encode($JSON);
-            $this->TLSReceiveData = '';
-            $this->WaitForTLSReceive = true;
-            parent::SendDataToParent($JsonString);
-            while (!$TLS->isHandshaked() && ($loop < 10)) {
-                $loop++;
-                $Result = $this->ReadTLSReceiveData();
-                if ($Result === false) {
-                    $this->SendDebug('TLS no answer', '', 0);
-                    trigger_error('TLS no answer', E_USER_NOTICE);
-                    break;
-                }
-                $this->SendDebug('Get TLS Handshake', $Result, 0);
 
-                try {
-                    $TLS->encode($Result);
-                    if ($TLS->isHandshaked()) {
-                        break;
-                    }
-                } catch (\PTLS\Exceptions\TLSAlertException $e) {
-                    $this->SendDebug('Error', $e->getMessage(), 1);
-                    $out = $e->decode();
-                    if (($out !== null) and (strlen($out) > 0)) {
-                        $JSON['DataID'] = '{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}';
-                        $JSON['Buffer'] = utf8_encode($out);
-                        $JsonString = json_encode($JSON);
-                        $this->TLSReceiveData = '';
-                        parent::SendDataToParent($JsonString);
-                    }
-                    trigger_error($e->getMessage(), E_USER_NOTICE);
-                    $this->WaitForTLSReceive = false;
-                    return false;
-                }
-
-                $SendData = $TLS->decode();
-                if (($SendData !== null) and (strlen($SendData) > 0)) {
-                    $this->SendDebug('TLS loop ' . $loop, $SendData, 0);
-                    $JSON['DataID'] = '{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}';
-                    $JSON['Buffer'] = utf8_encode($SendData);
-                    $JsonString = json_encode($JSON);
-                    $this->TLSReceiveData = '';
-                    $this->WaitForTLSReceive = true;
-                    parent::SendDataToParent($JsonString);
-                } else {
-                    $this->SendDebug('TLS waiting loop ' . $loop, $SendData, 0);
-                }
-            }
-            $this->WaitForTLSReceive = false;
-            if (!$TLS->isHandshaked()) {
-                return false;
-            }
-            return true;
-        }
-*/
         private function GetSessionId()
         {
             $SessionId = ($this->SessionId + 1) & 0xffff;
@@ -747,17 +517,12 @@ namespace {
                         throw new Exception($this->Translate('Send is blocked for: ') . \KLF200\APICommand::ToString($APIData->Command), E_USER_ERROR);
                     }
                 }
-                //if ($this->TLSState != \KLF200Gateway\TLSState::Connected) {
-                    if (!$this->HasActiveParent()){
+                if (!$this->HasActiveParent()) {
                     throw new Exception($this->Translate('Socket not connected'), E_USER_NOTICE);
                 }
                 $Data = $APIData->GetSLIPData();
                 $this->SendDebug('Send', $APIData, 1);
                 $this->SendDebug('Send SLIP Data', $Data, 1);
-                /*$TLS = $this->GetTLSContext();
-                $TLS->output($Data);
-                $SendData = $TLS->decode();
-                $this->SetTLSContext($TLS);*/
                 $JSON['DataID'] = '{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}';
                 $JSON['Buffer'] = utf8_encode($Data);
                 $JsonString = json_encode($JSON);
@@ -786,65 +551,6 @@ namespace {
                 return new \KLF200\APIData(\KLF200\APICommand::ERROR_NTF, chr(\KLF200\ErrorNTF::TIMEOUT));
             }
         }
-/*
-        private function ReadTLSReceiveData()
-        {
-            for ($i = 0; $i < 2000; $i++) {
-                $Input = $this->TLSReceiveData;
-                if ($Input != '') {
-                    $this->TLSReceiveData = '';
-                    return $Input;
-                }
-                usleep(1000);
-            }
-            return false;
-        }
-
-        private function WriteTLSReceiveData(string $Data)
-        {
-            if ($this->TLSReceiveData == '') {
-                $this->TLSReceiveData = $Data;
-                while ($this->TLSReceiveData != '') {
-                    usleep(1000);
-                }
-                return true;
-            }
-            return false;
-        }
-*/
-        protected function SendDebug($Message, $Data, $Format)
-        {
-            if (is_a($Data, '\\KLF200\\APIData')) {
-                /* @var $Data \KLF200\APIData */
-                $this->SendDebug2($Message . ':Command', \KLF200\APICommand::ToString($Data->Command), 0);
-                if ($Data->isError()) {
-                    $this->SendDebug2('Error', $Data->ErrorToString(), 0);
-                } elseif ($Data->Data != '') {
-                    $this->SendDebug2($Message . ':Data', $Data->Data, $Format);
-                }
-            } else {
-                $this->SendDebug2($Message, $Data, $Format);
-            }
-        }
-
-        /**
-         * @return \PTLS\TLSContext
-         */
-/*        private function GetTLSContext()
-        {
-            $this->lock('TLS');
-            return $this->Multi_TLS;
-        }
-*/
-        /**
-         * @param \PTLS\TLSContext $TLS
-         */
-  /*      private function SetTLSContext($TLS)
-        {
-            $this->Multi_TLS = $TLS;
-            $this->unlock('TLS');
-        }*/
     }
 
-}
 /* @} */

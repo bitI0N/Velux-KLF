@@ -1,55 +1,53 @@
 {
-    "elements":
-            [
-                {
-                    "name": "Password",
-                    "type": "PasswordTextBox",
-                    "caption": "Password"
-                }
-            ],
-    "actions":
-            [
-                {
-                    "type": "Button",
-                    "caption": "Request KLF version",
-                    "onClick": "KLF200_RequestGatewayVersion($id);"
-                },
-                {
-                    "type": "Button",
-                    "caption": "Request KLF state",
-                    "onClick": "KLF200_ReadGatewayState($id,'ALL');"
-                }
-            ],
-    "status":
-            [
-                {
-                    "code": 102,
-                    "icon": "active",
-                    "caption": "Connected"
-                },
-                {
-                    "code": 104,
-                    "icon": "inactive",
-                    "caption": "Interface closed"
-                },
-                {
-                    "code": 201,
-                    "icon": "error",
-                    "caption": "Authentification error"
-                }, {
-                    "code": 202,
-                    "icon": "error",
-                    "caption": "Handshake error"
-                },
-                {
-                    "code": 203,
-                    "icon": "error",
-                    "caption": "Connection lost"
-                },
-                {
-                    "code": 204,
-                    "icon": "error",
-                    "caption": "Configuration error"
-                }
-            ]
+    "elements": [
+        {
+            "name": "Password",
+            "type": "PasswordTextBox",
+            "caption": "Password"
+        }
+    ],
+    "actions": [
+        {
+            "type": "Button",
+            "caption": "Request KLF version",
+            "onClick": "KLF200_RequestGatewayVersion($id);"
+        },
+        {
+            "type": "Button",
+            "caption": "Request KLF state",
+            "onClick": "KLF200_ReadGatewayState($id,'ALL');"
+        }
+    ],
+    "status": [
+        {
+            "code": 102,
+            "icon": "active",
+            "caption": "Connected"
+        },
+        {
+            "code": 104,
+            "icon": "inactive",
+            "caption": "Interface closed"
+        },
+        {
+            "code": 201,
+            "icon": "error",
+            "caption": "Authentication error"
+        },
+        {
+            "code": 202,
+            "icon": "error",
+            "caption": "Handshake error"
+        },
+        {
+            "code": 203,
+            "icon": "error",
+            "caption": "Connection lost"
+        },
+        {
+            "code": 204,
+            "icon": "error",
+            "caption": "Configuration error"
+        }
+    ]
 }

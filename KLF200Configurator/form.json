@@ -4,7 +4,7 @@
             "type": "ExpansionPanel",
             "caption": "Gateway commands",
             "items": [
-                { 
+                {
                     "type": "RowLayout",
                     "name": "GatewayCommands",
                     "items": [
@@ -12,7 +12,7 @@
                             "type": "Button",
                             "label": "Discover device",
                             "onClick": "KLF200_DiscoveryNodes($id);"
-                        }, 
+                        },
                         {
                             "type": "PopupButton",
                             "caption": "Remove device",
@@ -38,7 +38,7 @@
                                                 "caption": "Node ID",
                                                 "name": "nodeid",
                                                 "width": "80px"
-                                            }, 
+                                            },
                                             {
                                                 "caption": "Type",
                                                 "name": "type",
@@ -52,14 +52,14 @@
                                         ],
                                         "values": []
                                     },
-                                      {
-                            "type": "ProgressBar",
-                            "name": "ProgressRemove",
-                            "current": 100,
-                            "indeterminate": true,
-                            "visible": false,
-                            "caption": "Waiting for finish remove."
-                        }
+                                    {
+                                        "type": "ProgressBar",
+                                        "name": "ProgressRemove",
+                                        "current": 100,
+                                        "indeterminate": true,
+                                        "visible": false,
+                                        "caption": "Waiting for finish remove."
+                                    }
                                 ]
                             }
                         },
@@ -75,7 +75,7 @@
                         }
                     ]
                 },
-                { 
+                {
                     "type": "RowLayout",
                     "name": "GatewayProgress",
                     "items": [
@@ -101,11 +101,12 @@
                 "column": "nodeid",
                 "direction": "ascending"
             },
-            "columns": [{
+            "columns": [
+                {
                     "caption": "Node ID",
                     "name": "nodeid",
                     "width": "80px"
-                }, 
+                },
                 {
                     "caption": "Type",
                     "name": "type",
@@ -115,7 +116,8 @@
                     "caption": "Name",
                     "name": "name",
                     "width": "300px"
-                }, {
+                },
+                {
                     "caption": "Location",
                     "name": "location",
                     "width": "auto"

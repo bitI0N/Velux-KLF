@@ -1,8 +1,8 @@
 [![Version](https://img.shields.io/badge/Symcon-PHPModul-red.svg?style=flat-square)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
-[![Version](https://img.shields.io/badge/Modul%20Version-0.50-blue.svg?style=flat-square)]()
-[![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg?style=flat-square)](https://creativecommons.org/licenses/by-nc-sa/4.0/)  
-[![Version](https://img.shields.io/badge/Symcon%20Version-5.2%20%3E-green.svg?style=flat-square)](https://www.symcon.de/forum/threads/41251-IP-Symcon-5-2-%28Testing%29)
-[![StyleCI](https://styleci.io/repos/193268520/shield?style=flat-square)](https://styleci.io/repos/193268520)  
+[![Version](https://img.shields.io/badge/Modul%20Version-0.70-blue.svg?style=flat-square)]()
+[![Version](https://img.shields.io/badge/Symcon%20Version-5.5%20%3E-green.svg?style=flat-square)]()  
+[![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg?style=flat-square)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+[![Check Style](https://github.com/Nall-chan/VeluxKLF200/workflows/Check%20Style/badge.svg)](https://github.com/Nall-chan/VeluxKLF200/actions) [![Run Tests](https://github.com/Nall-chan/VeluxKLF200/workflows/Run%20Tests/badge.svg)](https://github.com/Nall-chan/VeluxKLF200/actions)  
 
 # Velux KLF200 Gateway  
 Implementierung der API von dem Velux KLF200 Gateway.  
@@ -38,9 +38,9 @@ Dieses Modul ist ein Bestandteil des Symcon-Modul: [VeluxKLF200](../)
 
 ## 4. Einrichten der Instanzen in IP-Symcon
 
-Eine einfache Einrichtung ist über die im Objektbaum unter 'Konfigurator Instanzen' zu findene Instanz [KLF200 Konfigurator](../KLF200Configurator/README.md) möglich.  
+Eine einfache Einrichtung ist über die im Objektbaum unter 'Konfigurator Instanzen' zu findende Instanz [KLF200 Konfigurator](../KLF200Configurator/README.md) möglich.  
 
-Bei der manuellen Einrichtung ist das Modul im Dialog 'Instanz hinzufügen' unter den Hersteller 'VELUX' zufinden.  
+Bei der manuellen Einrichtung ist das Modul im Dialog 'Instanz hinzufügen' unter den Hersteller 'VELUX' zu finden.  
 ![Instanz hinzufügen](../imgs/instanzen.png)  
 
 Alternativ ist es auch in der Liste alle Splitter aufgeführt.  
@@ -105,22 +105,6 @@ Es wird keine lokale Uhrzeit, und keine Sommerzeit unterstützt. Das bool-Feld '
     'DaylightSavingFlag'
 
 ## 8. Lizenz
-
-### IPS-Modul:  
+ 
   [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)  
-  
-### Submodules:  
-  **PHP-TLS**  
-  https://github.com/rnaga/PHP-TLS  
-    Copyright (c) 2016 Ryohei Nagatsuka    
-
-  **Pure PHP Elliptic Curve Cryptography Library**  
-  https://github.com/phpecc/phpecc  
-
-  **Assert**  
-  https://github.com/beberlei/assert  
-    Copyright (c) 2011-2013, Benjamin Eberlei, All rights reserved.  
-
-  **AES GCM (Galois Counter Mode) PHP Implementation**  
-  https://github.com/Spomky-Labs/php-aes-gcm  
-    Copyright (c) 2016 Spomky-Labs  
+ 
