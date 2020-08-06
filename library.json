@@ -2,11 +2,11 @@
     "id": "{7D6B48F7-9957-4E50-B98B-B9831963D802}",
     "author": "Michael Tr\u00f6ger",
     "name": "Velux Library",
-    "url": "https://github.com/Nall-chan/KLF200/",
+    "url": "https://github.com/Nall-chan/VeluxKLF200/",
     "compatibility": {
-        "version": "5.2"
+        "version": "5.5"
     },
-    "version": "0.6",
-    "build": 110,
-    "date": 1568387804 
+    "version": "0.7",
+    "build": 117,
+    "date": 1596646255
 }
