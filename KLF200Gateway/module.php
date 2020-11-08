@@ -65,7 +65,7 @@ declare(strict_types=1);
             $this->RegisterTimer('KeepAlive', 0, 'KLF200_ReadGatewayState($_IPS[\'TARGET\']);');
             $this->Host = '';
             $this->ReceiveBuffer = '';
-            $this->ReplyAPIData = new \KLF200\APIData('');
+            $this->ReplyAPIData = null;
             $this->Nodes = [];
             $this->SessionId = 1;
         }
@@ -147,7 +147,7 @@ declare(strict_types=1);
                 return;
             }
             $this->ReceiveBuffer = '';
-            $this->ReplyAPIData = [];
+            $this->ReplyAPIData = null;
             $this->Nodes = [];
             $this->RegisterParent();
             if ($this->HasActiveParent()) {

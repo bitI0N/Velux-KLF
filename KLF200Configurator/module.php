@@ -22,7 +22,6 @@ class KLF200Configurator extends IPSModule
         \KLF200Configurator\InstanceStatus {
         \KLF200Configurator\InstanceStatus::MessageSink as IOMessageSink;
         \KLF200Configurator\InstanceStatus::RequestAction as IORequestAction;
-
         \KLF200Configurator\DebugHelper::SendDebug as SendDebug2;
     }
 
