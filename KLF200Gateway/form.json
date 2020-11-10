@@ -3,7 +3,8 @@
         {
             "name": "Password",
             "type": "PasswordTextBox",
-            "caption": "Password"
+            "caption": "Password",
+            "validate": "^\\S{1,31}$"
         }
     ],
     "actions": [

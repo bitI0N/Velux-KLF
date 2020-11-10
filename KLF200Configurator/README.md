@@ -1,25 +1,26 @@
 [![Version](https://img.shields.io/badge/Symcon-PHPModul-red.svg?style=flat-square)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
 [![Version](https://img.shields.io/badge/Modul%20Version-0.70-blue.svg?style=flat-square)]()
-[![Version](https://img.shields.io/badge/Symcon%20Version-5.5%20%3E-green.svg?style=flat-square)]()  
+[![Version](https://img.shields.io/badge/Symcon%20Version-5.5%20%3E-green.svg?style=flat-square)](https://www.symcon.de/service/dokumentation/installation/migrationen/v54-v55-q4-2020/)  
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg?style=flat-square)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 [![Check Style](https://github.com/Nall-chan/VeluxKLF200/workflows/Check%20Style/badge.svg)](https://github.com/Nall-chan/VeluxKLF200/actions) [![Run Tests](https://github.com/Nall-chan/VeluxKLF200/workflows/Run%20Tests/badge.svg)](https://github.com/Nall-chan/VeluxKLF200/actions)  
 
-# Velux KLF200 Configurator  
+# Velux KLF200 Configurator  <!-- omit in toc -->
 Ermöglicht das Anlegen von Instanzen in IPS.  
 An- und ab lernen von Geräten im KLF200 Gateway.  
 
-## Dokumentation
+## Dokumentation <!-- omit in toc -->
 
 **Inhaltsverzeichnis**
 
-1. [Funktionsumfang](#1-funktionsumfang) 
-2. [Voraussetzungen](#2-voraussetzungen)
-3. [Software-Installation](#3-software-installation)
-4. [Einrichten der Instanzen in IP-Symcon](#4-einrichten-der-instanzen-in-ip-symcon)
-5. [Statusvariablen und Profile](#5-statusvariablen-und-profile)
-6. [Gateway Kommandos](#6-gateway-kommandos)
-7. [PHP-Befehlsreferenz](#7-php-befehlsreferenz) 
-8. [Lizenz](#8-lizenz)
+- [1. Funktionsumfang](#1-funktionsumfang)
+- [2. Voraussetzungen](#2-voraussetzungen)
+- [3. Software-Installation](#3-software-installation)
+- [4. Einrichten der Instanzen in IP-Symcon](#4-einrichten-der-instanzen-in-ip-symcon)
+- [5. Statusvariablen und Profile](#5-statusvariablen-und-profile)
+- [6. Gateway Kommandos](#6-gateway-kommandos)
+- [7. PHP-Befehlsreferenz](#7-php-befehlsreferenz)
+- [8. Lizenz](#8-lizenz)
+
 
 ## 1. Funktionsumfang
 

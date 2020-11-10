@@ -68,6 +68,7 @@ declare(strict_types=1);
             $this->ReplyAPIData = null;
             $this->Nodes = [];
             $this->SessionId = 1;
+            $this->ParentID=0;
         }
 
         /**
@@ -109,25 +110,6 @@ declare(strict_types=1);
             return json_encode($Config);
         }
 
-        public function GetConfigurationForm()
-        {
-            $Form = json_decode(file_get_contents(__DIR__ . '/form.json'), true);
-            if (strlen($this->ReadPropertyString('Password')) > 31) {
-                $Form['actions'][] = [
-                    'type'  => 'PopupAlert',
-                    'popup' => [
-                        'items' => [
-                            [
-                                'type'    => 'Label',
-                                'caption' => 'The maximum size for the password are 31 letters.'
-                            ]
-                        ]
-                    ]
-                ];
-            }
-            return json_encode($Form);
-        }
-
         /**
          * Interne Funktion des SDK.
          */
@@ -143,16 +125,10 @@ declare(strict_types=1);
             $this->RegisterVariableString('FirmwareVersion', $this->Translate('Firmware Version'), '', 0);
             $this->RegisterVariableInteger('HardwareVersion', $this->Translate('Hardware Version'), '', 0);
             $this->RegisterVariableString('ProtocolVersion', $this->Translate('Protocol Version'), '', 0);
-            if (IPS_GetKernelRunlevel() != KR_READY) {
-                return;
+            if (IPS_GetKernelRunlevel() == KR_READY) {
+                $this->KernelReady();
             }
-            $this->ReceiveBuffer = '';
-            $this->ReplyAPIData = null;
-            $this->Nodes = [];
-            $this->RegisterParent();
-            if ($this->HasActiveParent()) {
-                $this->IOChangeState(IS_ACTIVE);
-            }
+            
         }
 
         public function ReadGatewayState()
@@ -283,7 +259,13 @@ declare(strict_types=1);
          */
         protected function KernelReady()
         {
+            $this->ReceiveBuffer = '';
+            $this->ReplyAPIData = null;
+            $this->Nodes = [];            
             $this->RegisterParent();
+            if ($this->HasActiveParent()) {
+                $this->IOChangeState(IS_ACTIVE);
+            }            
         }
 
         protected function RegisterParent()
@@ -341,12 +323,12 @@ declare(strict_types=1);
             }
         }
 
-        /* public function RebootGateway()
+        public function RebootGateway()
           {
           $APIData = new \KLF200\APIData(\KLF200\APICommand::REBOOT_REQ);
           $ResultAPIData = $this->SendAPIData($APIData);
           return !$ResultAPIData->isError();
-          } */
+          }
 
         /*
           public function GetSystemTable()

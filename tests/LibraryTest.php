@@ -11,13 +11,17 @@ class LibraryValidationTest extends TestCaseSymconValidation
         $this->validateLibrary(__DIR__ . '/..');
     }
 
-    public function testValidateNoTriggerSingle(): void
+    public function testValidateKLF200Gateway(): void
     {
-        $this->validateModule(__DIR__ . '/../NoTriggerSingle');
+        $this->validateModule(__DIR__ . '/../KLF200Gateway');
     }
 
-    public function testValidateNoTriggerGroup(): void
+    public function testValidateKLF200Configurator(): void
     {
-        $this->validateModule(__DIR__ . '/../NoTriggerGroup');
+        $this->validateModule(__DIR__ . '/../KLF200Configurator');
+    }
+    public function testValidateKLF200Node(): void
+    {
+        $this->validateModule(__DIR__ . '/../KLF200Node');
     }
 }

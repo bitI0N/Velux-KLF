@@ -34,6 +34,7 @@ class KLF200Configurator extends IPSModule
         $this->ConnectParent('{725D4DF6-C8FC-463C-823A-D3481A3D7003}');
         $this->GetNodeInfoIsRunning = false;
         $this->Nodes = [];
+        $this->ParentID=0;
     }
 
     /**
@@ -65,9 +66,10 @@ class KLF200Configurator extends IPSModule
             $this->SetReceiveDataFilter('(' . $Line . ')');
             $this->SendDebug('FILTER', $Line, 0);
         }
-        if ($this->HasActiveParent()) {
-            $this->IOChangeState(IS_ACTIVE);
-        }
+        if (IPS_GetKernelRunlevel() == KR_READY) {
+            $this->KernelReady();
+        }        
+        
     }
 
     /**
@@ -210,6 +212,9 @@ class KLF200Configurator extends IPSModule
     protected function KernelReady()
     {
         $this->RegisterParent();
+        if ($this->HasActiveParent()) {
+            $this->IOChangeState(IS_ACTIVE);
+        }        
     }
 
     /**
@@ -369,7 +374,8 @@ class KLF200Configurator extends IPSModule
             }
             $AddValue['create'] = [
                 'moduleID'      => '{4EBD07B1-2962-4531-AC5F-7944789A9CE5}',
-                'configuration' => ['NodeId' => $NodeID]
+                'configuration' => ['NodeId' => $NodeID],
+                'location'=>['Velux KLF200']
             ];
 
             $NodeValues[] = $AddValue;
