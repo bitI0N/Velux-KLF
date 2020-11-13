@@ -261,11 +261,13 @@ declare(strict_types=1);
         {
             $this->ReceiveBuffer = '';
             $this->ReplyAPIData = null;
-            $this->Nodes = [];            
+            $this->Nodes = [];     
             $this->RegisterParent();
             if ($this->HasActiveParent()) {
                 $this->IOChangeState(IS_ACTIVE);
-            }            
+            }  else {
+                $this->IOChangeState(IS_INACTIVE);
+            }          
         }
 
         protected function RegisterParent()
@@ -292,7 +294,7 @@ declare(strict_types=1);
             if ($State == IS_ACTIVE) {
                 if ($this->Connect()) {
                     $this->SetTimerInterval('KeepAlive', 600000);
-                    $this->LogMessage('Successfully connected to KLF200.', KL_NOTIFY);
+                    $this->LogMessage($this->Translate('Successfully connected to KLF200.'), KL_NOTIFY);
                     $this->SessionId = 1;
                     $this->RequestProtocolVersion();
                     $this->SetGatewayTime();
@@ -371,6 +373,11 @@ declare(strict_types=1);
             $ResultAPIData = $this->SendAPIData($APIData, false);
             if ($ResultAPIData === false) {
                 $this->SetStatus(IS_EBASE + 2);
+                return false;
+            }
+            if ($ResultAPIData->isError()) {
+                $this->SetStatus(IS_EBASE + 3);
+                trigger_error($this->Translate($ResultAPIData->ErrorToString()), E_USER_NOTICE);
                 return false;
             }
             if ($ResultAPIData->Data != "\x00") {

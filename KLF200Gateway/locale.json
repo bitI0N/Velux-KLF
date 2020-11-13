@@ -21,7 +21,8 @@
             "Command Version": "Kommando Version",
             "Protocol Version": "Protokoll Version",
             "Send is blocked for: ": "Senden ist blockiert für: ",
-            "Socket not connected": "Socket nicht verbunden"
+            "Socket not connected": "Socket nicht verbunden",
+            "Successfully connected to KLF200.":"Erfolgreich mit KLF200 verbunden."
         }
     }
 }
