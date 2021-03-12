@@ -22,7 +22,16 @@
             "Protocol Version": "Protokoll Version",
             "Send is blocked for: ": "Senden ist blockiert für: ",
             "Socket not connected": "Socket nicht verbunden",
-            "Successfully connected to KLF200.":"Erfolgreich mit KLF200 verbunden."
+            "Successfully connected to KLF200.": "Erfolgreich mit KLF200 verbunden.",
+            "Parameter is unable to execute.": "Parameter kann nicht ausgeführt werden.",
+            "Execution has failed.": "Die Ausführung ist fehlgeschlagen.",
+            "not used.": "nicht benutzt",
+            "waiting for power.": "Warten auf Strom.",
+            "Executing.": "Ausführen.",
+            "done.": "fertig.",
+            "unknown.": "unbekannt.",
+            "Execution is completed with no errors.": "Ausführung wurde ohne Fehler beendet.",
+            "Execution is still active.": "Die Ausführung ist noch aktiv."
         }
     }
 }

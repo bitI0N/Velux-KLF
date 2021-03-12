@@ -133,19 +133,19 @@ class State
     {
         switch ($State) {
             case self::NON_EXECUTING:
-                return 'Parameter is unable to execute';
+                return 'Parameter is unable to execute.';
             case self::ERROR_WHILE_EXECUTION:
                 return 'Execution has failed.';
             case self::NOT_USED:
-                return 'not used';
+                return 'not used.';
             case self::WAITING_FOR_POWER:
-                return 'waiting for power';
+                return 'waiting for power.';
             case self::EXECUTING:
-                return 'Executing';
+                return 'Executing.';
             case self::DONE:
-                return 'done';
+                return 'done.';
             case self::UNKNOWN:
-                return 'unknown';
+                return 'unknown.';
             default:
                 return 'unknown state value: 0x' . sprintf('%02X', $State);
         }
