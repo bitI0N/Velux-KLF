@@ -294,7 +294,7 @@ class KLF200Node extends IPSModule
           PL_0_3    PL_4_7  LockTime
          */
         $Data = $this->NodeId . $this->GetSessionId(); //Data 1-2
-        $Data .= chr(1) . chr(3) . chr(0); // Data 3-5
+        $Data .= chr(1) . chr(3) . chr(1); // Data 3-5
         $Data .= chr(0x80) . chr(0); // Data 6-7
         $Data .= "\xD4\x00"; // Data 8-9 -> ignore
         $Data .= pack('n', $Value); // Data 10-11
@@ -322,7 +322,7 @@ class KLF200Node extends IPSModule
           PL_0_3    PL_4_7  LockTime
          */
         $Data = $this->NodeId . $this->GetSessionId(); //Data 1-2
-        $Data .= chr(1) . chr(3) . chr(0); // Data 3-5
+        $Data .= chr(1) . chr(3) . chr(2); // Data 3-5
         $Data .= chr(0x40) . chr(0); // Data 6-7
         $Data .= "\xD4\x00"; // Data 8-9 -> ignore
         $Data .= "\x00\x00"; // Data 10-11
