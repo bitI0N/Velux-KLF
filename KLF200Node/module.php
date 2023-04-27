@@ -782,10 +782,13 @@ class KLF200Node extends IPSModule
             /** @var \KLF200\APIData $ResponseAPIData */
             $ret = @$this->SendDataToParent($APIData->ToJSON('{7B0F87CC-0408-4283-8E0E-2D48141E42E8}'));
             $ResponseAPIData = @unserialize($ret);
-            $this->SendDebug('Response', $ResponseAPIData, 1);
-            if (is_null($ResponseAPIData) || !$ResponseAPIData || $ResponseAPIData->isError()) {
-                trigger_error($this->Translate($ResponseAPIData->ErrorToString()), E_USER_NOTICE);
-                return null;
+            if (empty($ResponseAPIData) || $ResponseAPIData->isError()) {
+              $message = "Instance has an error on response";
+              if (!is_null($ResponseAPIData)) {
+                $message = $ResponseAPIData->ErrorToString();
+              }
+              trigger_error($this->Translate($message), E_USER_NOTICE);
+              return null;
             }
             return $ResponseAPIData;
         } catch (Exception $exc) {
