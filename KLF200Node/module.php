@@ -784,7 +784,7 @@ class KLF200Node extends IPSModule
             $ResponseAPIData = @unserialize($ret);
             if (empty($ResponseAPIData) || $ResponseAPIData->isError()) {
               $message = "Instance has an error on response";
-              if (!is_null($ResponseAPIData)) {
+              if (is_object($ResponseAPIData) && method_exists($ResponseAPIData, 'ErrorToString')) {
                 $message = $ResponseAPIData->ErrorToString();
               }
               trigger_error($this->Translate($message), E_USER_NOTICE);
